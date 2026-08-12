@@ -63,16 +63,18 @@ use-ncs() {
 
 use-vanilla() {
     local target_ver="${1:-v4.2.2}"
+    local sdk_ver="${2:-0.17.0}"
     
-    # 1. Clear out any prior NCS or Zephyr environment overrides
+    # 1. Clear out prior environment overrides
     reset-ncs > /dev/null
     
-    # 2. Export Vanilla Zephyr paths
+    # 2. Export paths mirroring NCS layout
     export ZEPHYR_BASE="/workdir/zephyr-sdks/${target_ver}/zephyr"
+    export ZEPHYR_SDK_INSTALL_DIR="/workdir/zephyr-sdks/toolchains/zephyr-sdk-${sdk_ver}"
     
     if [ -f "$ZEPHYR_BASE/zephyr-env.sh" ]; then
         source "$ZEPHYR_BASE/zephyr-env.sh"
-        echo "Switched to Vanilla Zephyr ${target_ver}"
+        echo "Switched to Vanilla Zephyr ${target_ver} (SDK: zephyr-sdk-${sdk_ver})"
     else
         echo "Error: Vanilla Zephyr not found at $ZEPHYR_BASE" >&2
         return 1

@@ -17,40 +17,65 @@ west update --narrow -o=--depth=1
 
 ```bash
 export ZEPHYR_VAN_VER="v4.2.2"
+export ZEPHYR_SDK_VER="0.17.0"
 export ZEPHYR_BASE="/workdir/zephyr-sdks/$ZEPHYR_VAN_VER/zephyr"
-source "$ZEPHYR_BASE/zephyr-env.sh"
+export ZEPHYR_SDK_DIR="/workdir/zephyr-sdks/toolchains/zephyr-sdk-$ZEPHYR_SDK_VER"
+
+# 1. Download and install Zephyr SDK toolchain
+mkdir -p /workdir/zephyr-sdks/toolchains
+wget -qO- "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VER}/zephyr-sdk-${ZEPHYR_SDK_VER}_linux-x86_64_minimal.tar.xz" | tar -xJ -C /workdir/zephyr-sdks/toolchains
+cd "$ZEPHYR_SDK_DIR" && ./setup.sh -h -t x86_64-zephyr-elf -t arm-zephyr-eabi
+
+# 2. Clone Zephyr repository & fetch submodules
+git clone --depth 1 --branch "$ZEPHYR_VAN_VER" https://github.com/zephyrproject-rtos/zephyr.git "$ZEPHYR_BASE"
+cd "$ZEPHYR_BASE/.."
+west init -l "$ZEPHYR_BASE"
+west update --narrow -o=--depth=1
 ```
 
 ### Complete Script
 
 ```bash
-# 1. Define base path
+# Define base path
 export ZEPHYR_VAN_VER="v4.2.2"
-export ZEPHYR_BASE="/workdir/zephyr-sdks/$ZEPHYR_VAN_VER/zephyr"
+export ZEPHYR_SDK_VER="0.17.0"
 
-# 2. Validate repository path exists
-if [ ! -d "$ZEPHYR_BASE" ]; then
-    echo "Error: ZEPHYR_BASE path does not exist: $ZEPHYR_BASE" >&2
-    return 1 2>/dev/null || exit 1
-fi
+export ZEPHYR_BASE_DIR="/workdir/zephyr-sdks"
+export ZEPHYR_TARGET_DIR="$ZEPHYR_BASE_DIR/$ZEPHYR_VAN_VER"
+export ZEPHYR_BASE="$ZEPHYR_TARGET_DIR/zephyr"
+export ZEPHYR_TOOLCHAINS_DIR="$ZEPHYR_BASE_DIR/toolchains"
+export ZEPHYR_SDK_DIR="$ZEPHYR_TOOLCHAINS_DIR/zephyr-sdk-$ZEPHYR_SDK_VER"
 
-# 3. Safely initialize West workspace if not already initialized
-if [ ! -d "$ZEPHYR_BASE/../.west" ]; then
-    (cd "$ZEPHYR_BASE/.." && west init -l "$ZEPHYR_BASE") || {
-        echo "Error: Failed to initialize west workspace at $ZEPHYR_BASE" >&2
+# 1. Ensure target directories exist
+mkdir -p "$ZEPHYR_TARGET_DIR" "$ZEPHYR_TOOLCHAINS_DIR"
+
+# 2. Download and setup Zephyr SDK if not present
+if [ ! -d "$ZEPHYR_SDK_DIR" ]; then
+    echo "Downloading Zephyr SDK $ZEPHYR_SDK_VER..."
+    wget -qO- "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VER}/zephyr-sdk-${ZEPHYR_SDK_VER}_linux-x86_64_minimal.tar.xz" | tar -xJ -C "$ZEPHYR_TOOLCHAINS_DIR" || {
+        echo "Error: Failed to download Zephyr SDK $ZEPHYR_SDK_VER" >&2
         return 1 2>/dev/null || exit 1
     }
+    (cd "$ZEPHYR_SDK_DIR" && ./setup.sh -h -t x86_64-zephyr-elf -t arm-zephyr-eabi)
 fi
 
-# 4. Source zephyr-env.sh safely
-if [ -f "$ZEPHYR_BASE/zephyr-env.sh" ]; then
-    source "$ZEPHYR_BASE/zephyr-env.sh"
+# 3. Clone Vanilla Zephyr sources & fetch submodules via West
+if [ ! -d "$ZEPHYR_BASE" ]; then
+    echo "Cloning Vanilla Zephyr $ZEPHYR_VAN_VER..."
+    git clone --depth 1 --branch "$ZEPHYR_VAN_VER" https://github.com/zephyrproject-rtos/zephyr.git "$ZEPHYR_BASE" || {
+        echo "Error: Failed to clone Zephyr repo" >&2
+        return 1 2>/dev/null || exit 1
+    }
+    
+    (cd "$ZEPHYR_TARGET_DIR" && west init -l "$ZEPHYR_BASE" && west update --narrow -o=--depth=1) || {
+        echo "Error: Failed to initialize and update west modules" >&2
+        return 1 2>/dev/null || exit 1
+    }
 else
-    echo "Error: zephyr-env.sh not found inside $ZEPHYR_BASE" >&2
-    return 1 2>/dev/null || exit 1
+    echo "Vanilla Zephyr sources for $ZEPHYR_VAN_VER already exist in $ZEPHYR_BASE"
 fi
 
-echo "Successfully initialized Vanilla Zephyr environment at $ZEPHYR_BASE"
+echo "Successfully cloned Vanilla Zephyr $ZEPHYR_VAN_VER with SDK $ZEPHYR_SDK_VER"
 ```
 
 ### Permanently adding it to `.bashrc`
