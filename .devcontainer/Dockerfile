@@ -3,6 +3,8 @@ FROM zephyrprojectrtos/zephyr-build:latest
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
 
+# ----------- SETTING UP NRF CONNECT TOOLS
+
 # 1. Install base dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl wget unzip jq python3-pip \
@@ -23,4 +25,68 @@ RUN NCLT_BASE=https://nsscprodmedia.blob.core.windows.net/prod/software-and-othe
     cp -r ./nrf-command-line-tools /opt && \
     ln -s /opt/nrf-command-line-tools/bin/nrfjprog /usr/local/bin/nrfjprog && \
     ln -s /opt/nrf-command-line-tools/bin/mergehex /usr/local/bin/mergehex && \
+    ln -s /opt/SEGGER/JLink/JLinkExe /usr/local/bin/JLinkExe && \
+    echo "/opt/SEGGER/JLink" > /etc/ld.so.conf.d/SEGGER_JLink.conf && ldconfig && \
     cd / && rm -rf "${NCLT_TMP}"
+
+# ----------- SETTING UP USE/RESET ZEPHYR ENVIRONMENT
+
+# Example Usage:
+#   use-ncs v3.3.0     # Switches PATH and env vars to nRF Connect SDK v3.3.0
+#   reset-ncs          # Restores clean baseline environment
+#   use-vanilla v4.2.2 # Switches to Vanilla Zephyr v4.2.2
+
+# Append SDK environment helpers to bashrc
+RUN cat << 'EOF' >> /root/.bashrc
+
+if [ -z "$_ORIG_PATH" ]; then
+    export _ORIG_PATH="$PATH"
+    export _ORIG_LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
+fi
+
+use-ncs() {
+    local target_ver="${1:-v3.3.0}"
+    local script_path
+    
+    # 1. Clear out any prior Vanilla or NCS environment overrides
+    reset-ncs > /dev/null
+
+    script_path=$(find /workspaces -name "ncs.py" 2>/dev/null | head -n 1)
+
+    if [ -n "$script_path" ] && [ -f "$script_path" ]; then
+        eval "$(/usr/bin/python3 "$script_path" "$target_ver")"
+    else
+        echo "Error: Could not locate ncs.py script." >&2
+        return 1
+    fi
+}
+
+use-vanilla() {
+    local target_ver="${1:-v4.2.2}"
+    
+    # 1. Clear out any prior NCS or Zephyr environment overrides
+    reset-ncs > /dev/null
+    
+    # 2. Export Vanilla Zephyr paths
+    export ZEPHYR_BASE="/workdir/zephyr-sdks/${target_ver}/zephyr"
+    
+    if [ -f "$ZEPHYR_BASE/zephyr-env.sh" ]; then
+        source "$ZEPHYR_BASE/zephyr-env.sh"
+        echo "Switched to Vanilla Zephyr ${target_ver}"
+    else
+        echo "Error: Vanilla Zephyr not found at $ZEPHYR_BASE" >&2
+        return 1
+    fi
+}
+
+reset-ncs() {
+    export PATH="$_ORIG_PATH"
+    if [ -n "$_ORIG_LD_LIBRARY_PATH" ]; then
+        export LD_LIBRARY_PATH="$_ORIG_LD_LIBRARY_PATH"
+    else
+        unset LD_LIBRARY_PATH
+    fi
+    unset ZEPHYR_BASE ZEPHYR_SDK_INSTALL_DIR NCS_TOOLCHAIN_PATH ZEPHYR_TOOLCHAIN_VARIANT
+    echo "Reset environment to container baseline."
+}
+EOF
