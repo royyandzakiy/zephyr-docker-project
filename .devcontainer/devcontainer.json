@@ -1,0 +1,25 @@
+{
+  "name": "Zephyr & NCS Build Environment",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "runArgs": [
+    "--privileged"
+  ],
+  "mounts": [
+    "source=zephyr-sdks-cache,target=/workdir/zephyr-sdks,type=volume",
+    "source=ncs-sdks-cache,target=/workdir/ncs-sdks,type=volume"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "twxs.cmake",
+        "marus25.cortex-debug",
+        "nordic-semiconductor.nrf-connect"
+      ]
+    }
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "postStartCommand": "/bin/bash .devcontainer/setup-sdks.sh"
+}

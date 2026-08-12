@@ -1,0 +1,8 @@
+/ {
+    /* We redefine the aliases to point to the actual physical nodes */
+    aliases {
+        led0 = &led0;      /* Physical LED 1 */
+        sw0 = &button0;    /* Physical Button 1 */
+        hal0 = &button1;   /* Using Physical Button 2 as your 'Hall' sensor */
+    };
+};
