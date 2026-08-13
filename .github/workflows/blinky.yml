@@ -98,6 +98,18 @@ jobs:
         with:
           path: blinky-test
 
+      - name: Setup USB permissions
+        run: |
+          sudo chmod 666 /dev/bus/usb/*/* || true
+          sudo chown root:root /dev/bus/usb/*/* || true
+          lsusb -v | grep -i "j-link" || true
+          ls -la /dev/bus/usb/*/*
+
+      - name: Check J-Link version
+        run: |
+          JLinkExe -v
+          nrfjprog --version
+
       - name: Preflight — toolchain and probe present
         run: |
           set -euo pipefail
