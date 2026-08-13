@@ -90,7 +90,7 @@ jobs:
         working-directory: blinky-test
 
     env:
-      CI_NRF5340DK_SNR: "001050073602"
+      CI_NRF5340DK_SNR: "1050073602"
 
     steps:
       - name: Checkout repo
@@ -104,12 +104,8 @@ jobs:
           nrfjprog --version
           echo "--- connected probes ---"
           nrfjprog --ids
-
-          # Format nrfjprog output to match the length of $CI_NRF5340DK_SNR (e.g., %012d)
-          LEN=${#CI_NRF5340DK_SNR}
-          
-          if ! nrfjprog --ids | awk -v len="$LEN" '{printf "%0*d\n", len, $1}' | grep -qx "$CI_NRF5340DK_SNR"; then
-            echo "::error::J-Link ${CI_NRF5340DK_SNR} not found. Check USB passthrough / board power."
+          if ! nrfjprog --ids | grep -qx "$CI_NRF5340DK_SNR"; then
+            echo "::error::J-Link $CI_NRF5340DK_SNR not found. Check USB passthrough / board power."
             exit 1
           fi
 
