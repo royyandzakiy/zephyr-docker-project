@@ -81,7 +81,7 @@ jobs:
 
   hw_flash_and_test:
     needs: build_for_hw_test
-    runs-on: [self-hosted, linux, nrf5340dk]
+    runs-on: [self-hosted]
     timeout-minutes: 15
 
     defaults:
