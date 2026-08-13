@@ -23,10 +23,6 @@ jobs:
       # ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          path: app
-
       - name: Cache Zephyr workspace
         uses: actions/cache@v4
         id: zephyr-cache
@@ -53,12 +49,12 @@ jobs:
             ${{ runner.os }}-ccache-${{ github.ref_name }}-
             ${{ runner.os }}-ccache-
 
-      - name: Build app against pinned Zephyr
+      - name: Build blinky
         env:
           CCACHE_DIR: ~/.cache/ccache
         run: |
           cd zephyr-workspace
-          west build -b nrf5340dk_nrf5340_cpuapp "${{ github.workspace }}/app" -d build -p -- -DZEPHYR_SCACHE=ccache
+          west build -b nrf5340dk_nrf5340_cpuapp zephyr/samples/basic/blinky -d build -p -- -DZEPHYR_SCACHE=ccache
 
       - name: Create build tarball
         run: |
