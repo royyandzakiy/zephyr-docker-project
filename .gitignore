@@ -2,3 +2,4 @@
 twister**/**
 .venv/**
 **/__pycache__/**
+.env

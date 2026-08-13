@@ -104,7 +104,7 @@ jobs:
           nrfjprog --version
           echo "--- connected probes ---"
           nrfjprog --ids
-          if ! nrfjprog --ids | grep -qx "$CI_NRF5340DK_SNR"; then
+          if ! nrfjprog --ids | grep -q "$CI_NRF5340DK_SNR"; then
             echo "::error::J-Link ${CI_NRF5340DK_SNR} not found. Check USB passthrough / board power."
             exit 1
           fi
