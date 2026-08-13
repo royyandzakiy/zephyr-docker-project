@@ -33,21 +33,23 @@ jobs:
           west init -l zephyr
           west update --narrow -o=--depth=1
 
-      # Handles downloading, setting paths, and registering CMake package automatically
-      - name: Setup Zephyr SDK
-        uses: zephyrproject-rtos/action-zephyr-sdk@v1
-        with:
-          version: ${{ env.ZEPHYR_TOOLCHAIN_VERSION }}
-          toolchains: 'arm-zephyr-eabi'
-
-      - name: Cache Ccache
+      - name: Cache Zephyr SDK
         uses: actions/cache@v4
+        id: cache-zephyr-sdk
         with:
-          path: ~/.cache/ccache
-          key: ${{ runner.os }}-ccache-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-ccache-${{ github.ref_name }}-
-            ${{ runner.os }}-ccache-
+          path: /opt/toolchains/zephyr-sdk-${{ env.ZEPHYR_TOOLCHAIN_VERSION }}
+          key: ${{ runner.os }}-zephyr-sdk-${{ env.ZEPHYR_TOOLCHAIN_VERSION }}-arm
+
+      - name: Download & Extract Zephyr SDK
+        if: steps.cache-zephyr-sdk.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /opt/toolchains
+          wget -qO- "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_TOOLCHAIN_VERSION}/zephyr-sdk-${ZEPHYR_TOOLCHAIN_VERSION}_linux-x86_64_minimal.tar.xz" | tar -xJ -C /opt/toolchains
+
+      - name: Register SDK CMake Package
+        run: |
+          cd /opt/toolchains/zephyr-sdk-${ZEPHYR_TOOLCHAIN_VERSION}
+          ./setup.sh -h -c -t arm-zephyr-eabi
 
       - name: Build blinky
         env:
