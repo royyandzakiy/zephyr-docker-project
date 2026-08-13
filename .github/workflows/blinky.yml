@@ -54,7 +54,7 @@ jobs:
           CCACHE_DIR: ~/.cache/ccache
         run: |
           cd zephyr-workspace
-          west build -b nrf5340dk_nrf5340_cpuapp zephyr/samples/basic/blinky -d build -p -- -DZEPHYR_SCACHE=ccache
+          west build -b nrf5340dk zephyr/samples/basic/blinky -d build -p -- -DZEPHYR_SCACHE=ccache
 
       - name: Create build tarball
         run: |
