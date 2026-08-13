@@ -119,7 +119,7 @@ jobs:
 
       - name: Check J-Link version
         run: |
-          JLinkExe -v
+          # JLinkExe -v # there is no -v command
           nrfjprog --version
 
       - name: Preflight — toolchain and probe present
