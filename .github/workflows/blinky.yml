@@ -1,0 +1,122 @@
+name: Blinky
+
+on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#   schedule:
+#     - cron: "0 0 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  build_for_hw_test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: zephyrprojectrtos/ci:v0.26.4
+
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /workdir/zephyr-sdks/toolchains/zephyr-sdk-0.17.0
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: app
+
+      - name: Init and update west
+        run: |
+          mkdir -p .west
+          cat <<EOF > .west/config
+          [manifest]
+          path = app
+          file = west.yml
+          EOF
+
+      - name: Cache West Dependencies
+        uses: actions/cache@v4
+        id: west-cache
+        with:
+          path: |
+            deps
+            .west
+          key: ${{ runner.os }}-west-${{ hashFiles('app/west.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-west-
+
+      - name: Update west modules
+        run: |
+          west update -o=--depth=1 -n
+          git config --global user.email user@git-scm.com
+          git config --global user.name "Git User"
+          west patch
+
+      - name: Cache Ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ${{ runner.os }}-ccache-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-${{ github.ref_name }}-
+            ${{ runner.os }}-ccache-
+
+      - name: Build blinky
+        env:
+          CCACHE_DIR: ~/.cache/ccache
+        run: |
+          cd deps/zephyr/samples/basic/blinky
+          west build -b nrf5340dk_nrf5340_cpuapp . -p -- -DZEPHYR_SCACHE=ccache
+
+      - name: Create build tarball
+        run: |
+          cd deps/zephyr/samples/basic/blinky
+          tar czf build.tar.gz build/zephyr/zephyr.hex
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: build.tar.gz
+          path: deps/zephyr/samples/basic/blinky/build.tar.gz
+
+# Run on device
+  hw_flash_and_test:
+    needs: build_for_hw_test
+    runs-on: [self-hosted]
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: blinky-test
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          path: blinky-test
+
+      - name: Download build tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: build.tar.gz
+          path: blinky-test/samples/blinky
+
+      - name: Untar
+        run: |
+          cd samples/blinky
+          tar xvf build.tar.gz
+
+      - name: Flash and Verify Test Results
+        env:
+          CI_NRF5340DK_SNR: 001050073602
+        run: |
+          cd samples/blinky
+
+          # Check serial number of board from GitHub Repo Secret
+          echo $CI_NRF5340DK_SNR
+
+          nrfjprog --recover -f NRF53 --snr $CI_NRF5340DK_SNR
+          nrfjprog --eraseall -f NRF53 --snr $CI_NRF5340DK_SNR
+          nrfjprog --program build/zephyr/zephyr.hex --verify -f NRF53 --snr $CI_NRF5340DK_SNR
+          nrfjprog --pinresetenable -f NRF53 --snr $CI_NRF5340DK_SNR
+          nrfjprog --pinreset -f NRF53 --snr $CI_NRF5340DK_SNR
+          sleep 3
