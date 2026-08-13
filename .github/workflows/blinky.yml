@@ -151,57 +151,59 @@ jobs:
         run: |
           set -euo pipefail
           cd samples/blinky
+
+          west flash -r nrfjprog --snr 1050073602
           
-          # Function to reset J-Link connection
-          reset_jlink() {
-            echo "Resetting J-Link connection..."
-            JLinkExe -device NRF5340_XXAA -if SWD -speed 4000 -autoconnect 1 -CommanderScript <(echo "r; g; exit") 2>&1 || true
-            sleep 2
-          }
+          # # Function to reset J-Link connection
+          # reset_jlink() {
+          #   echo "Resetting J-Link connection..."
+          #   JLinkExe -device NRF5340_XXAA -if SWD -speed 4000 -autoconnect 1 -CommanderScript <(echo "r; g; exit") 2>&1 || true
+          #   sleep 2
+          # }
           
-          # Function to flash with retry
-          flash_with_retry() {
-            local max_attempts=3
-            local attempt=1
-            local cmd="$1"
-            shift
+          # # Function to flash with retry
+          # flash_with_retry() {
+          #   local max_attempts=3
+          #   local attempt=1
+          #   local cmd="$1"
+          #   shift
             
-            while [ $attempt -le $max_attempts ]; do
-              echo "Attempt $attempt of $max_attempts: $cmd"
-              if nrfjprog "$@" -f NRF53 --snr "$CI_NRF5340DK_SNR" --log 2>&1; then
-                return 0
-              else
-                echo "Command failed. Attempt $attempt of $max_attempts"
-                if [ $attempt -lt $max_attempts ]; then
-                  echo "Retrying in 3 seconds..."
-                  reset_jlink
-                  sleep 3
-                fi
-                attempt=$((attempt + 1))
-              fi
-            done
+          #   while [ $attempt -le $max_attempts ]; do
+          #     echo "Attempt $attempt of $max_attempts: $cmd"
+          #     if nrfjprog "$@" -f NRF53 --snr "$CI_NRF5340DK_SNR" --log 2>&1; then
+          #       return 0
+          #     else
+          #       echo "Command failed. Attempt $attempt of $max_attempts"
+          #       if [ $attempt -lt $max_attempts ]; then
+          #         echo "Retrying in 3 seconds..."
+          #         reset_jlink
+          #         sleep 3
+          #       fi
+          #       attempt=$((attempt + 1))
+          #     fi
+          #   done
             
-            echo "All $max_attempts attempts failed"
-            return 1
-          }
+          #   echo "All $max_attempts attempts failed"
+          #   return 1
+          # }
           
-          # Flash with retry for each operation
-          echo "=== Starting flash operations ==="
+          # # Flash with retry for each operation
+          # echo "=== Starting flash operations ==="
           
-          # Ensure J-Link is ready before starting
-          reset_jlink
+          # # Ensure J-Link is ready before starting
+          # reset_jlink
           
-          echo "=== Recover ==="
-          flash_with_retry "recover" --recover || exit 1
+          # echo "=== Recover ==="
+          # flash_with_retry "recover" --recover || exit 1
           
-          echo "=== Eraseall ==="
-          flash_with_retry "eraseall" --eraseall || exit 1
+          # echo "=== Eraseall ==="
+          # flash_with_retry "eraseall" --eraseall || exit 1
           
-          echo "=== Program and verify ==="
-          flash_with_retry "program" --program build/zephyr/zephyr.hex --verify || exit 1
+          # echo "=== Program and verify ==="
+          # flash_with_retry "program" --program build/zephyr/zephyr.hex --verify || exit 1
           
-          echo "=== Reset ==="
-          flash_with_retry "reset" --reset || exit 1
+          # echo "=== Reset ==="
+          # flash_with_retry "reset" --reset || exit 1
           
           echo "=== Flash completed successfully ==="
           sleep 3
