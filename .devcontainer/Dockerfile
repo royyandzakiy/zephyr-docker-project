@@ -8,6 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # 1. Install base dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl wget unzip jq python3-pip \
+    clang-format clangd gcc-multilib make libffi8 \
+    git python3-venv cmake ninja-build libyaml-0-2 \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Install nrfutil & plugins

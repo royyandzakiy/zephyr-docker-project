@@ -1,4 +1,18 @@
 ## To Do
+
+- create .github workflow
+    - run build samples
+    - build
+    - run twister
+    - run local runner
+
+## Done
+
+- prepared dockerfile devcontainer. get and use ncs/vanilla is working. west build, twister is working
+
+---
+
+## To Do
 - run the twister with pytest. create a new simple_pytest_test
 
 - create a test with emul mocking use (eg: spi)
