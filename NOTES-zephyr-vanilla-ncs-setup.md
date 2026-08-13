@@ -6,9 +6,13 @@
 export ZEPHYR_VAN_VER="v4.2.2"
 export ZEPHYR_BASE="/workdir/zephyr-sdks/$ZEPHYR_VAN_VER/zephyr"
 
+# 2. Clone Zephyr repository & fetch submodules
 git clone --depth 1 --branch $ZEPHYR_VAN_VER https://github.com/zephyrproject-rtos/zephyr.git "$ZEPHYR_BASE"
 west init -l "$ZEPHYR_BASE"
 west update --narrow -o=--depth=1
+
+mkdir -p /workdir/zephyr-sdks/toolchains
+wget -qO- "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VER}/zephyr-sdk-${ZEPHYR_SDK_VER}_linux-x86_64_minimal.tar.xz" | tar -xJ -C /workdir/zephyr-sdks/toolchains
 ```
 
 ## Setting up Zephyr Vanilla path
@@ -16,34 +20,32 @@ west update --narrow -o=--depth=1
 ### Short version
 
 ```bash
+# Select version, define paths
 export ZEPHYR_VAN_VER="v4.2.2"
 export ZEPHYR_SDK_VER="0.17.0"
+
 export ZEPHYR_BASE="/workdir/zephyr-sdks/$ZEPHYR_VAN_VER/zephyr"
 export ZEPHYR_SDK_DIR="/workdir/zephyr-sdks/toolchains/zephyr-sdk-$ZEPHYR_SDK_VER"
 
-# 1. Download and install Zephyr SDK toolchain
-mkdir -p /workdir/zephyr-sdks/toolchains
-wget -qO- "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VER}/zephyr-sdk-${ZEPHYR_SDK_VER}_linux-x86_64_minimal.tar.xz" | tar -xJ -C /workdir/zephyr-sdks/toolchains
-cd "$ZEPHYR_SDK_DIR" && ./setup.sh -h -t x86_64-zephyr-elf -t arm-zephyr-eabi
-
-# 2. Clone Zephyr repository & fetch submodules
-git clone --depth 1 --branch "$ZEPHYR_VAN_VER" https://github.com/zephyrproject-rtos/zephyr.git "$ZEPHYR_BASE"
-cd "$ZEPHYR_BASE/.."
-west init -l "$ZEPHYR_BASE"
-west update --narrow -o=--depth=1
+# Setup chosen Zephyr SDK toolchain & Environment
+source "$ZEPHYR_SDK_DIR/setup.sh" -h -c -t x86_64-zephyr-elf -t arm-zephyr-eabi
+source "$ZEPHYR_BASE/zephyr-env.sh"
 ```
 
 ### Complete Script
 
 ```bash
-# Define base path
+# Select versions
 export ZEPHYR_VAN_VER="v4.2.2"
 export ZEPHYR_SDK_VER="0.17.0"
 
+# Define base path
 export ZEPHYR_BASE_DIR="/workdir/zephyr-sdks"
 export ZEPHYR_TARGET_DIR="$ZEPHYR_BASE_DIR/$ZEPHYR_VAN_VER"
-export ZEPHYR_BASE="$ZEPHYR_TARGET_DIR/zephyr"
 export ZEPHYR_TOOLCHAINS_DIR="$ZEPHYR_BASE_DIR/toolchains"
+
+# Define paths
+export ZEPHYR_BASE="$ZEPHYR_TARGET_DIR/zephyr"
 export ZEPHYR_SDK_DIR="$ZEPHYR_TOOLCHAINS_DIR/zephyr-sdk-$ZEPHYR_SDK_VER"
 
 # 1. Ensure target directories exist
@@ -56,7 +58,7 @@ if [ ! -d "$ZEPHYR_SDK_DIR" ]; then
         echo "Error: Failed to download Zephyr SDK $ZEPHYR_SDK_VER" >&2
         return 1 2>/dev/null || exit 1
     }
-    (cd "$ZEPHYR_SDK_DIR" && ./setup.sh -h -t x86_64-zephyr-elf -t arm-zephyr-eabi)
+    (cd "$ZEPHYR_SDK_DIR" && ./setup.sh -h -c -t x86_64-zephyr-elf -t arm-zephyr-eabi)
 fi
 
 # 3. Clone Vanilla Zephyr sources & fetch submodules via West
