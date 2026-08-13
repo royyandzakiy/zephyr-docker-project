@@ -14,42 +14,35 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: zephyrprojectrtos/ci:v0.26.4
+      image: zephyrprojectrtos/ci:v0.29.3
 
     env:
-      ZEPHYR_SDK_INSTALL_DIR: /workdir/zephyr-sdks/toolchains/zephyr-sdk-0.17.0
+      ZEPHYR_VERSION: v4.2.2
+      # If the toolchain baked into the ci image doesn't match this,
+      # uncomment and point at an explicitly installed SDK instead:
+      # ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
 
     steps:
       - uses: actions/checkout@v4
         with:
           path: app
 
-      - name: Init and update west
-        run: |
-          mkdir -p .west
-          cat <<EOF > .west/config
-          [manifest]
-          path = app
-          file = west.yml
-          EOF
-
-      - name: Cache West Dependencies
+      - name: Cache Zephyr workspace
         uses: actions/cache@v4
-        id: west-cache
+        id: zephyr-cache
         with:
-          path: |
-            deps
-            .west
-          key: ${{ runner.os }}-west-${{ hashFiles('app/west.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-west-
+          path: zephyr-workspace
+          key: ${{ runner.os }}-zephyr-${{ env.ZEPHYR_VERSION }}
 
-      - name: Update west modules
+      - name: Fetch vanilla Zephyr
+        if: steps.zephyr-cache.outputs.cache-hit != 'true'
         run: |
-          west update -o=--depth=1 -n
-          git config --global user.email user@git-scm.com
-          git config --global user.name "Git User"
-          west patch
+          mkdir -p zephyr-workspace
+          git clone --depth 1 --branch $ZEPHYR_VERSION \
+            https://github.com/zephyrproject-rtos/zephyr.git zephyr-workspace/zephyr
+          cd zephyr-workspace
+          west init -l zephyr
+          west update --narrow -o=--depth=1
 
       - name: Cache Ccache
         uses: actions/cache@v4
@@ -60,23 +53,23 @@ jobs:
             ${{ runner.os }}-ccache-${{ github.ref_name }}-
             ${{ runner.os }}-ccache-
 
-      - name: Build blinky
+      - name: Build app against pinned Zephyr
         env:
           CCACHE_DIR: ~/.cache/ccache
         run: |
-          cd deps/zephyr/samples/basic/blinky
-          west build -b nrf5340dk_nrf5340_cpuapp . -p -- -DZEPHYR_SCACHE=ccache
+          cd zephyr-workspace
+          west build -b nrf5340dk_nrf5340_cpuapp "${{ github.workspace }}/app" -d build -p -- -DZEPHYR_SCACHE=ccache
 
       - name: Create build tarball
         run: |
-          cd deps/zephyr/samples/basic/blinky
-          tar czf build.tar.gz build/zephyr/zephyr.hex
+          cd zephyr-workspace/build/zephyr
+          tar czf build.tar.gz zephyr.hex
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
         with:
           name: build.tar.gz
-          path: deps/zephyr/samples/basic/blinky/build.tar.gz
+          path: zephyr-workspace/build/zephyr/build.tar.gz
 
 # Run on device
   hw_flash_and_test:
