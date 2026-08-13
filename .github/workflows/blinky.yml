@@ -1,12 +1,6 @@
 name: Blinky
 
 on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-#   schedule:
-#     - cron: "0 0 * * *"
-
   workflow_dispatch:
 
 jobs:
@@ -18,9 +12,8 @@ jobs:
 
     env:
       ZEPHYR_VERSION: v4.2.2
-      # If the toolchain baked into the ci image doesn't match this,
-      # uncomment and point at an explicitly installed SDK instead:
-      # ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.17.0
+      ZEPHYR_TOOLCHAIN_VERSION: 0.17.0
+      BOARD_TYPE: "nrf5340dk/nrf5340/cpuapp"
 
     steps:
       - name: Cache Zephyr workspace
@@ -40,6 +33,13 @@ jobs:
           west init -l zephyr
           west update --narrow -o=--depth=1
 
+      # Handles downloading, setting paths, and registering CMake package automatically
+      - name: Setup Zephyr SDK
+        uses: zephyrproject-rtos/action-zephyr-sdk@v1
+        with:
+          version: ${{ env.ZEPHYR_TOOLCHAIN_VERSION }}
+          toolchains: 'arm-zephyr-eabi'
+
       - name: Cache Ccache
         uses: actions/cache@v4
         with:
@@ -54,7 +54,7 @@ jobs:
           CCACHE_DIR: ~/.cache/ccache
         run: |
           cd zephyr-workspace
-          west build -b nrf5340dk/nrf5340/cpuapp zephyr/samples/basic/blinky -d build -p -- -DZEPHYR_SCACHE=ccache
+          west build -b $BOARD_TYPE zephyr/samples/basic/blinky -d build -p -- -DZEPHYR_SCACHE=ccache
 
       - name: Create build tarball
         run: |
@@ -67,7 +67,6 @@ jobs:
           name: build.tar.gz
           path: zephyr-workspace/build/zephyr/build.tar.gz
 
-# Run on device
   hw_flash_and_test:
     needs: build_for_hw_test
     runs-on: [self-hosted]
@@ -99,8 +98,6 @@ jobs:
           CI_NRF5340DK_SNR: 001050073602
         run: |
           cd samples/blinky
-
-          # Check serial number of board from GitHub Repo Secret
           echo $CI_NRF5340DK_SNR
 
           nrfjprog --recover -f NRF53 --snr $CI_NRF5340DK_SNR
