@@ -6,6 +6,7 @@ on:
 jobs:
   build_for_hw_test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     container:
       image: zephyrprojectrtos/ci:v0.29.3
@@ -51,38 +52,62 @@ jobs:
           cd /opt/toolchains/zephyr-sdk-${ZEPHYR_TOOLCHAIN_VERSION}
           ./setup.sh -h -c -t arm-zephyr-eabi
 
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ${{ runner.os }}-ccache-${{ env.BOARD_TYPE }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-${{ env.BOARD_TYPE }}-
+
       - name: Build blinky
         env:
           CCACHE_DIR: ~/.cache/ccache
         run: |
           cd zephyr-workspace
           west build -b $BOARD_TYPE zephyr/samples/basic/blinky -d build -p -- -DZEPHYR_SCACHE=ccache
+          ccache -s || true
 
       - name: Create build tarball
         run: |
-          cd zephyr-workspace/build/zephyr
-          tar czf build.tar.gz zephyr.hex
+          cd zephyr-workspace
+          tar czf build.tar.gz build/zephyr/zephyr.hex
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
         with:
           name: build.tar.gz
-          path: zephyr-workspace/build/zephyr/build.tar.gz
+          path: zephyr-workspace/build.tar.gz
 
   hw_flash_and_test:
     needs: build_for_hw_test
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, linux, nrf5340dk]
+    timeout-minutes: 15
 
     defaults:
       run:
         shell: bash
         working-directory: blinky-test
 
+    env:
+      CI_NRF5340DK_SNR: "001050073602"
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           path: blinky-test
+
+      - name: Preflight — toolchain and probe present
+        run: |
+          set -euo pipefail
+          nrfjprog --version
+          echo "--- connected probes ---"
+          nrfjprog --ids
+          if ! nrfjprog --ids | grep -qx "$CI_NRF5340DK_SNR"; then
+            echo "::error::J-Link ${CI_NRF5340DK_SNR} not found. Check USB passthrough / board power."
+            exit 1
+          fi
 
       - name: Download build tarball
         uses: actions/download-artifact@v4
@@ -92,19 +117,24 @@ jobs:
 
       - name: Untar
         run: |
+          set -euo pipefail
           cd samples/blinky
-          tar xvf build.tar.gz
+          rm -rf build
+          tar xzf build.tar.gz
+          test -f build/zephyr/zephyr.hex
 
-      - name: Flash and Verify Test Results
-        env:
-          CI_NRF5340DK_SNR: 001050073602
+      - name: Flash
         run: |
+          set -euo pipefail
           cd samples/blinky
-          echo $CI_NRF5340DK_SNR
-
-          nrfjprog --recover -f NRF53 --snr $CI_NRF5340DK_SNR
-          nrfjprog --eraseall -f NRF53 --snr $CI_NRF5340DK_SNR
-          nrfjprog --program build/zephyr/zephyr.hex --verify -f NRF53 --snr $CI_NRF5340DK_SNR
-          nrfjprog --pinresetenable -f NRF53 --snr $CI_NRF5340DK_SNR
-          nrfjprog --pinreset -f NRF53 --snr $CI_NRF5340DK_SNR
+          nrfjprog --recover           -f NRF53 --snr "$CI_NRF5340DK_SNR"
+          nrfjprog --eraseall          -f NRF53 --snr "$CI_NRF5340DK_SNR"
+          nrfjprog --program build/zephyr/zephyr.hex --verify \
+                                       -f NRF53 --snr "$CI_NRF5340DK_SNR"
+          nrfjprog --reset             -f NRF53 --snr "$CI_NRF5340DK_SNR"
           sleep 3
+
+      - name: Leave board in a clean state
+        if: always()
+        run: |
+          nrfjprog --reset -f NRF53 --snr "$CI_NRF5340DK_SNR" || true
