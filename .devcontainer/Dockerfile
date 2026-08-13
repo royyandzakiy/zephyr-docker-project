@@ -74,6 +74,7 @@ use-vanilla() {
     
     if [ -f "$ZEPHYR_BASE/zephyr-env.sh" ]; then
         source "$ZEPHYR_BASE/zephyr-env.sh"
+        source "$ZEPHYR_SDK_INSTALL_DIR/setup.sh" -h -c -t x86_64-zephyr-elf -t arm-zephyr-eabi
         echo "Switched to Vanilla Zephyr ${target_ver} (SDK: zephyr-sdk-${sdk_ver})"
     else
         echo "Error: Vanilla Zephyr not found at $ZEPHYR_BASE" >&2

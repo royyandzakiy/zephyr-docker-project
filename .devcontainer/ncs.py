@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 NCS_BASE_DIR = Path("/workdir/ncs-sdks")
+# Points directly to /workdir/ncs-sdks/toolchains
 TOOLCHAINS_DIR = NCS_BASE_DIR / "toolchains"
 TOOLCHAINS_JSON = TOOLCHAINS_DIR / "toolchains.json"
 
@@ -39,8 +40,9 @@ def install_version(target_ver: str):
 
     if not has_tc:
         print(f'echo "--- Installing nRF Connect Toolchain for {target_ver} ---" >&2')
-        # FIX: Added --install-dir so toolchains land in /workdir/ncs-sdks/toolchains
-        tc_cmd = f"nrfutil toolchain-manager install --ncs-version {target_ver} --install-dir {TOOLCHAINS_DIR}"
+        # IMPORTANT: Passing NCS_BASE_DIR (/workdir/ncs-sdks) because nrfutil 
+        # auto-appends '/toolchains' to this path.
+        tc_cmd = f"nrfutil toolchain-manager install --ncs-version {target_ver} --install-dir {NCS_BASE_DIR}"
         if subprocess.run(tc_cmd, shell=True).returncode != 0:
             fail(f"Failed to install toolchain for {target_ver} via nrfutil")
 
@@ -57,7 +59,7 @@ def install_version(target_ver: str):
             fail(f"Failed to fetch west repositories for {target_ver}")
 
     # Cleanup download archives to save space
-    subprocess.run(f"rm -rf {TOOLCHAINS_DIR}/downloads/*", shell=True)
+    subprocess.run(f"rm -rf {TOOLCHAINS_DIR}/downloads/* {TOOLCHAINS_DIR}/tmp/*", shell=True)
     print(f'echo "--- SDK {target_ver} is ready ---" >&2')
 
 def list_versions(toolchains):
@@ -71,7 +73,7 @@ def list_versions(toolchains):
         print('echo "To install one, run: use-ncs <version>" >&2')
         sys.exit(0)
 
-    ver_list = "\n".join(f"  - {v}" for v in sorted(versions))
+    ver_list = "\n".join(f"   - {v}" for v in sorted(versions))
     print(f'echo "Available nRF Connect SDK versions:\n{ver_list}\n\nUsage: use-ncs <version>" >&2')
     sys.exit(0)
 
@@ -101,7 +103,8 @@ def main():
     hash_dir = None
     for tc in toolchains:
         if target_ver in tc.get("ncs_versions", []):
-            hash_dir = tc.get("identifier", {}).get("bundle_id")
+            # Check bundle_id first, fallback to path if needed
+            hash_dir = tc.get("identifier", {}).get("bundle_id") or tc.get("path")
             break
 
     # If missing, install dynamic SDK
@@ -111,7 +114,7 @@ def main():
         toolchains = load_toolchains()
         for tc in toolchains:
             if target_ver in tc.get("ncs_versions", []):
-                hash_dir = tc.get("identifier", {}).get("bundle_id")
+                hash_dir = tc.get("identifier", {}).get("bundle_id") or tc.get("path")
                 break
 
     if not hash_dir:
