@@ -2,7 +2,7 @@
 ### Native Sim 
 
 ```bash
-root@f0aaad86c393:/workspaces/zephyr-emul-project# west build -b native_sim -p auto -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+root@f0aaad86c393:/workspaces/zephyr-emul-project# west build -b native_sim -p always --
 [0/3] Performing build step for 'zephyr-emul-project'
 [2/2] Running utility command for native_runner_executable
 [3/3] Completed 'zephyr-emul-project'

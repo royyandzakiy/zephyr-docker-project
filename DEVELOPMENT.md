@@ -1,15 +1,14 @@
 ## To Do
 
-- create .github workflow
-    - run build samples
-    - build
-    - run twister
-    - run local runner
 
 ## Done
 
 - prepared dockerfile devcontainer. get and use ncs/vanilla is working. west build, twister is working
-
+- create .github workflow
+    - run build samples/blinky
+    - build
+    - run twister
+    - run local runner
 ---
 
 ## To Do

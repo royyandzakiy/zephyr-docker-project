@@ -127,11 +127,11 @@ jobs:
         run: |
           set -euo pipefail
           cd samples/blinky
-          nrfjprog --recover           -f NRF53 --snr "$CI_NRF5340DK_SNR"
-          nrfjprog --eraseall          -f NRF53 --snr "$CI_NRF5340DK_SNR"
-          nrfjprog --program build/zephyr/zephyr.hex --verify \
-                                       -f NRF53 --snr "$CI_NRF5340DK_SNR"
-          nrfjprog --reset             -f NRF53 --snr "$CI_NRF5340DK_SNR"
+          flash() { nrfjprog "$@" -f NRF53 --snr "$CI_NRF5340DK_SNR" --log || { echo "--- log.log ---"; cat log.log; return 1; }; }
+          flash --recover
+          flash --eraseall
+          flash --program build/zephyr/zephyr.hex --verify
+          flash --reset
           sleep 3
 
       - name: Leave board in a clean state
