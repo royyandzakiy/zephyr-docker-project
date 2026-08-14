@@ -50,7 +50,7 @@ jobs:
       - name: Register SDK CMake Package
         run: |
           cd /opt/toolchains/zephyr-sdk-${ZEPHYR_TOOLCHAIN_VERSION}
-          ./setup.sh -h -c -t arm-zephyr-eabi
+          ./setup.sh -c -t arm-zephyr-eabi
 
       - name: Cache ccache
         uses: actions/cache@v4
@@ -98,46 +98,12 @@ jobs:
         with:
           path: blinky-test
 
-      - name: Setup USB permissions and reset J-Link
+      - name: USB diagnostics
         run: |
-          # Grant USB permissions
-          sudo chmod 666 /dev/bus/usb/*/* || true
-          sudo chown root:root /dev/bus/usb/*/* || true
-          
-          # Show USB devices
-          echo "=== USB devices ==="
-          lsusb
-          echo "=== J-Link devices ==="
-          lsusb | grep -i "j-link" || true
-          echo "=== USB device permissions ==="
-          ls -la /dev/bus/usb/*/*
-          
-          # Reset J-Link connection to ensure it's ready
-          echo "=== Resetting J-Link connection ==="
-          JLinkExe -device NRF5340_XXAA -if SWD -speed 4000 -autoconnect 1 -CommanderScript <(echo "r; g; exit") || true
-          sleep 2
-
-      - name: Check J-Link version
-        run: |
-          # Note: 'JLinkExe -version' or 'JLinkExe -?' can be used if checking J-Link directly
-          
-          target_ver="v4.2.2"
-          sdk_ver="0.17.0"
-          
-          # Export paths mirroring NCS layout
-          export ZEPHYR_BASE="/workdir/zephyr-sdks/${target_ver}/zephyr"
-          export ZEPHYR_SDK_INSTALL_DIR="/workdir/zephyr-sdks/toolchains/zephyr-sdk-${sdk_ver}"
-          
-          if [ -f "$ZEPHYR_BASE/zephyr-env.sh" ]; then
-              source "$ZEPHYR_BASE/zephyr-env.sh"
-              source "$ZEPHYR_SDK_INSTALL_DIR/setup.sh" -h -c -t x86_64-zephyr-elf -t arm-zephyr-eabi
-              echo "Switched to Vanilla Zephyr ${target_ver} (SDK: zephyr-sdk-${sdk_ver})"
-          else
-              echo "Error: Vanilla Zephyr not found at $ZEPHYR_BASE" >&2
-              exit 1
-          fi
-
-          nrfjprog --version
+          echo "=== SEGGER devices ==="
+          lsusb -d 1366: || echo "no SEGGER device"
+          echo "=== USB nodes ==="
+          ls -l /dev/bus/usb/*/*
 
       - name: Preflight — toolchain and probe present
         run: |
@@ -164,80 +130,14 @@ jobs:
           tar xzf build.tar.gz
           test -f build/zephyr/zephyr.hex
 
-      - name: Flash with retry
+      - name: Flash
         run: |
           set -euo pipefail
           cd samples/blinky
-
-          west flash -r nrfjprog --snr 1050073602
-          
-          # # Function to reset J-Link connection
-          # reset_jlink() {
-          #   echo "Resetting J-Link connection..."
-          #   JLinkExe -device NRF5340_XXAA -if SWD -speed 4000 -autoconnect 1 -CommanderScript <(echo "r; g; exit") 2>&1 || true
-          #   sleep 2
-          # }
-          
-          # # Function to flash with retry
-          # flash_with_retry() {
-          #   local max_attempts=3
-          #   local attempt=1
-          #   local cmd="$1"
-          #   shift
-            
-          #   while [ $attempt -le $max_attempts ]; do
-          #     echo "Attempt $attempt of $max_attempts: $cmd"
-          #     if nrfjprog "$@" -f NRF53 --snr "$CI_NRF5340DK_SNR" --log 2>&1; then
-          #       return 0
-          #     else
-          #       echo "Command failed. Attempt $attempt of $max_attempts"
-          #       if [ $attempt -lt $max_attempts ]; then
-          #         echo "Retrying in 3 seconds..."
-          #         reset_jlink
-          #         sleep 3
-          #       fi
-          #       attempt=$((attempt + 1))
-          #     fi
-          #   done
-            
-          #   echo "All $max_attempts attempts failed"
-          #   return 1
-          # }
-          
-          # # Flash with retry for each operation
-          # echo "=== Starting flash operations ==="
-          
-          # # Ensure J-Link is ready before starting
-          # reset_jlink
-          
-          # echo "=== Recover ==="
-          # flash_with_retry "recover" --recover || exit 1
-          
-          # echo "=== Eraseall ==="
-          # flash_with_retry "eraseall" --eraseall || exit 1
-          
-          # echo "=== Program and verify ==="
-          # flash_with_retry "program" --program build/zephyr/zephyr.hex --verify || exit 1
-          
-          # echo "=== Reset ==="
-          # flash_with_retry "reset" --reset || exit 1
-          
-          echo "=== Flash completed successfully ==="
-          sleep 3
+          nrfjprog --eraseall -f NRF53 --snr "$CI_NRF5340DK_SNR"
+          nrfjprog --program build/zephyr/zephyr.hex --verify -f NRF53 --snr "$CI_NRF5340DK_SNR"
+          nrfjprog --reset    -f NRF53 --snr "$CI_NRF5340DK_SNR"
 
       - name: Leave board in a clean state
         if: always()
-        run: |
-          echo "=== Cleaning up board state ==="
-          # Try multiple times to reset
-          for i in {1..3}; do
-            echo "Reset attempt $i"
-            if nrfjprog --reset -f NRF53 --snr "$CI_NRF5340DK_SNR" 2>&1; then
-              echo "Reset successful"
-              break
-            fi
-            sleep 2
-          done || true
-          
-          # Final attempt with J-Link direct command if nrfjprog fails
-          JLinkExe -device NRF5340_XXAA -if SWD -speed 4000 -autoconnect 1 -CommanderScript <(echo "r; g; exit") 2>&1 || true
+        run: nrfjprog --reset -f NRF53 --snr "$CI_NRF5340DK_SNR" || true
