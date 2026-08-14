@@ -3,6 +3,12 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "containerEnv": {
+    "RUNNER_ALLOW_RUNASROOT": "1"
+  },
+  "containerUser": "root",
+  "remoteUser": "root",
+  "updateRemoteUserUID": false,
   "runArgs": [
     "--privileged",
     "--mount", "type=bind,source=/dev/bus/usb,target=/dev/bus/usb,bind-propagation=rshared"
@@ -16,7 +22,6 @@
       "extensions": [
         "ms-vscode.cpptools",
         "twxs.cmake",
-        "marus25.cortex-debug",
         "nordic-semiconductor.nrf-connect"
       ]
     }

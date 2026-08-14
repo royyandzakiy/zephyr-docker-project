@@ -28,16 +28,10 @@ tar xzf ./actions-runner-linux-x64-2.336.0.tar.gz
 Run the actions-runner NOT as root (here we create a user called runner)
 
 ```bash
-# Create a non-root user (e.g., runner)
-useradd -m runner
-chown -R runner:runner /actions-runner
-
-# Switch to the new user and run the script
-su runner -c bash
 cd /actions-runner
 
 # config if not yet
-# ./config.sh --url https://github.com/YOUR_USERNAME/zephyr-docker-project --token YOUR_TOKEN_HERE"
+./config.sh --url https://github.com/YOUR_USERNAME/zephyr-docker-project --token YOUR_TOKEN_HERE" --ephemeral
 
 ./run.sh
 ```
@@ -47,7 +41,6 @@ cd /actions-runner
 Error: Cannot configure the runner because it is already configured. To reconfigure the runner, run 'config.cmd remove' or './config.sh remove' first.
 
 ```bash
-su runner -c bash
 ./config.sh remove --token YOUR_TOKEN_HERE
 ```
 
@@ -58,11 +51,25 @@ Error: A runner already exists
 # A session for this runner already exists.
 # 2026-08-13 11:57:51Z: Runner connect error: Error: Conflict. Retrying until reconnected.
 
-# Find the running runner processes
+# Find the running runner processes, then kill
 ps aux | grep -i Runner.Listener
-
 pkill -9 -f Runner.Listener || true
+
+# or, wait 1-3 mins until github actions kills it online
+# or, replace with a new runner
+./config.sh --url https://github.com/YOUR_USERNAME/YOUR_REPO --token YOUR_NEW_RUNNER_TOKEN --replace
+
 ./run.sh
+```
+
+Error: Not Found
+
+```bash
+# Http response code: NotFound from 'POST https://api.github.com/actions/runner-registration' (Request Id: 14ED:2450BC:5DE3A:66F10:6A7E54AF)
+# {"message":"Not Found","documentation_url":"https://docs.github.com/rest","status":"404"}
+# Response status code does not indicate success: 404 (Not Found).
+
+# TBD?
 ```
 
 ## Build & Flashing
