@@ -119,8 +119,24 @@ jobs:
 
       - name: Check J-Link version
         run: |
-          # JLinkExe -v # there is no -v command
-          use-vanilla v4.2.2
+          # Note: 'JLinkExe -version' or 'JLinkExe -?' can be used if checking J-Link directly
+          
+          target_ver="v4.2.2"
+          sdk_ver="0.17.0"
+          
+          # Export paths mirroring NCS layout
+          export ZEPHYR_BASE="/workdir/zephyr-sdks/${target_ver}/zephyr"
+          export ZEPHYR_SDK_INSTALL_DIR="/workdir/zephyr-sdks/toolchains/zephyr-sdk-${sdk_ver}"
+          
+          if [ -f "$ZEPHYR_BASE/zephyr-env.sh" ]; then
+              source "$ZEPHYR_BASE/zephyr-env.sh"
+              source "$ZEPHYR_SDK_INSTALL_DIR/setup.sh" -h -c -t x86_64-zephyr-elf -t arm-zephyr-eabi
+              echo "Switched to Vanilla Zephyr ${target_ver} (SDK: zephyr-sdk-${sdk_ver})"
+          else
+              echo "Error: Vanilla Zephyr not found at $ZEPHYR_BASE" >&2
+              exit 1
+          fi
+
           nrfjprog --version
 
       - name: Preflight — toolchain and probe present
