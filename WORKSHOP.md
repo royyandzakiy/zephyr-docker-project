@@ -1,0 +1,43 @@
+- what is zephyr
+    - zephyr history, architecture, examples, myths
+    - demo zephyr hello world
+        - project structure
+    - demo zephyr bmi190 reading
+        - project structure
+- preworkshop setup
+    - fork project
+    - docker installed & running
+    - project build & open in devcontainer
+    - run native_sim hello world
+    - opt: build to selected board, flash
+    - opt: run actions-runner
+- workshop
+    - current folder structure + cmake + compilation flow
+    - dts: nrf5340dk, native_sim
+    - hello world: west to compile & flash
+        - nrf5340dk monitor with pyserial
+        - native_sim run .exe
+    - bmi190: west to compile & flash
+        - nrf5340dk reading value, monitor with pyserial
+        - native_sim reading value, run .exe
+
+    - creating simple test ztest
+        - use west build to compile and run
+        - use twister to compile and run
+    - use emul
+        - gpio emul app
+        - i2c emul app
+    - ztest with emul
+    
+    - create shell app
+    - pytest
+        - pytest hello world
+        - pytest shell 
+        - twister pytest hello world
+        - twister pytest shell
+    - twister pytest shell bmi190
+
+    - 
+    - ci: build, run ci/self-hosted
+        - run hello_native_ci, hello_binary_self, hello_nrf53_self
+        - run pytest_shell_native_ci, pytest_shell_binary_self, pytest_shell_nrf53_self
