@@ -23,7 +23,8 @@
       "extensions": [
         "ms-vscode.cpptools",
         "twxs.cmake",
-        "nordic-semiconductor.nrf-connect"
+        "nordic-semiconductor.nrf-connect",
+        "thecreativedodo.usbip-connect"
       ]
     }
   },
