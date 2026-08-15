@@ -81,8 +81,12 @@ jobs:
 
   hw_flash_and_test:
     needs: build_for_hw_test
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, linux]
     timeout-minutes: 15
+
+    concurrency:
+      group: hw-nrf5340dk
+      cancel-in-progress: false
 
     defaults:
       run:
@@ -90,7 +94,7 @@ jobs:
         working-directory: blinky-test
 
     env:
-      CI_NRF5340DK_SNR: "1050073602"
+      CI_NRF5340DK_SNR: "1050073602" # change this to YOUR BOARD ID
 
     steps:
       - name: Checkout repo
@@ -104,14 +108,17 @@ jobs:
           lsusb -d 1366: || echo "no SEGGER device"
           echo "=== USB nodes ==="
           ls -l /dev/bus/usb/*/*
+          echo "=== nrfutil view ==="
+          nrfutil device list || true
 
       - name: Preflight — toolchain and probe present
         run: |
           set -euo pipefail
-          nrfjprog --version
+          nrfutil --version
           echo "--- connected probes ---"
-          nrfjprog --ids
-          if ! nrfjprog --ids | grep -qx "$CI_NRF5340DK_SNR"; then
+          nrfutil device list --json | jq -r '.. | .serialNumber? // empty' | tr -d '\r' > /tmp/snrs.txt
+          cat /tmp/snrs.txt
+          if ! grep -qx "$CI_NRF5340DK_SNR" /tmp/snrs.txt; then
             echo "::error::J-Link $CI_NRF5340DK_SNR not found. Check USB passthrough / board power."
             exit 1
           fi
@@ -134,10 +141,22 @@ jobs:
         run: |
           set -euo pipefail
           cd samples/blinky
-          nrfjprog --eraseall -f NRF53 --snr "$CI_NRF5340DK_SNR"
-          nrfjprog --program build/zephyr/zephyr.hex --verify -f NRF53 --snr "$CI_NRF5340DK_SNR"
-          nrfjprog --reset    -f NRF53 --snr "$CI_NRF5340DK_SNR"
+          nrfutil device erase     --serial-number "$CI_NRF5340DK_SNR"
+          nrfutil device program   --serial-number "$CI_NRF5340DK_SNR" --firmware build/zephyr/zephyr.hex
+          nrfutil device fw-verify --serial-number "$CI_NRF5340DK_SNR" --firmware build/zephyr/zephyr.hex
+          nrfutil device reset     --serial-number "$CI_NRF5340DK_SNR"
+
+      - name: Recover on failure
+        if: failure()
+        run: |
+          nrfutil device recover --serial-number "$CI_NRF5340DK_SNR" || true
+          for i in $(seq 30); do
+            nrfutil device list --json | jq -r '.. | .serialNumber? // empty' \
+              | grep -qx "$CI_NRF5340DK_SNR" && exit 0
+            sleep 1
+          done
+          echo "::error::probe did not re-enumerate after recover"; exit 1
 
       - name: Leave board in a clean state
         if: always()
-        run: nrfjprog --reset -f NRF53 --snr "$CI_NRF5340DK_SNR" || true
+        run: nrfutil device reset --serial-number "$CI_NRF5340DK_SNR" || true
