@@ -4,6 +4,8 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# ----------- SETTING UP TOOLS
+
 # 1. Base dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl wget unzip jq python3-pip file \
@@ -46,12 +48,20 @@ RUN JLINK_LIB="$(ldconfig -p | awk '/libjlinkarm\.so\.7/ {print $NF; exit}')" &&
     file -L "${JLINK_LIB}" | grep -q 'ELF 64-bit' && \
     nrfjprog --version
 
-# ----------- SETTING UP USE/RESET ZEPHYR ENVIRONMENT
+# ----------- SETTING UP GITHUB ACTIONS RUNNER
+WORKDIR /actions-runner
+
+RUN curl -o actions-runner-linux-x64-2.336.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.336.0/actions-runner-linux-x64-2.336.0.tar.gz \
+    && echo "04cf0be1aff4c3ec3554466c39124ca250e3effd8873bb7e8d68535aa9505d5d  actions-runner-linux-x64-2.336.0.tar.gz" | shasum -a 256 -c \
+    && tar xzf ./actions-runner-linux-x64-2.336.0.tar.gz \
+    && rm ./actions-runner-linux-x64-2.336.0.tar.gz
+
+# ----------- SETTING UP USE/RESET DEFAULT ZEPHYR ENVIRONMENT VIA .BASHRC
 
 # Example Usage:
+#   use-vanilla v4.2.2 # Switches to Vanilla Zephyr v4.2.2
 #   use-ncs v3.3.0     # Switches PATH and env vars to nRF Connect SDK v3.3.0
 #   reset-ncs          # Restores clean baseline environment
-#   use-vanilla v4.2.2 # Switches to Vanilla Zephyr v4.2.2
 
 # Append SDK environment helpers to bashrc
 RUN cat << 'EOF' >> /root/.bashrc
@@ -62,6 +72,7 @@ if [ -z "$_ORIG_PATH" ]; then
 fi
 
 use-ncs() {
+    # default values
     local target_ver="${1:-v3.3.0}"
     local script_path
     
@@ -79,6 +90,7 @@ use-ncs() {
 }
 
 use-vanilla() {
+    # default values
     local target_ver="${1:-v4.2.2}"
     local sdk_ver="${2:-0.17.0}"
     
@@ -109,4 +121,7 @@ reset-ncs() {
     unset ZEPHYR_BASE ZEPHYR_SDK_INSTALL_DIR NCS_TOOLCHAIN_PATH ZEPHYR_TOOLCHAIN_VARIANT
     echo "Reset environment to container baseline."
 }
+
+# Set default environment on interactive load, change if preferred
+use-vanilla v4.2.2
 EOF

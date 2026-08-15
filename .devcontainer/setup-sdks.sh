@@ -26,13 +26,13 @@ else
 fi
 
 # --- 2. Check & Fetch nRF Connect SDK (v3.3.0) via ncs.py ---
-NCS_VER="v3.3.0"
-SCRIPT_PATH=$(find /workspaces -name "ncs.py" 2>/dev/null | head -n 1)
+# NCS_VER="v3.3.0"
+# SCRIPT_PATH=$(find /workspaces -name "ncs.py" 2>/dev/null | head -n 1)
 
-if [ -n "$SCRIPT_PATH" ] && [ -f "$SCRIPT_PATH" ]; then
-    echo "=== Checking nRF Connect SDK $NCS_VER ==="
-    /usr/bin/python3 "$SCRIPT_PATH" install "$NCS_VER"
-else
-    echo "Error: Could not locate ncs.py inside /workspaces" >&2
-    exit 1
-fi
+# if [ -n "$SCRIPT_PATH" ] && [ -f "$SCRIPT_PATH" ]; then
+#     echo "=== Checking nRF Connect SDK $NCS_VER ==="
+#     /usr/bin/python3 "$SCRIPT_PATH" install "$NCS_VER"
+# else
+#     echo "Error: Could not locate ncs.py inside /workspaces" >&2
+#     exit 1
+# fi
