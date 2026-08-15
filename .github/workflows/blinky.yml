@@ -95,6 +95,7 @@ jobs:
 
     env:
       CI_NRF5340DK_SNR: "1050073602" # change this to YOUR BOARD ID
+      # CI_NRF5340DK_SNR: ${{ vars.CI_NRF5340DK_SNR }}
 
     steps:
       - name: Checkout repo
