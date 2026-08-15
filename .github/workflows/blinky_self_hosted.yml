@@ -1,4 +1,4 @@
-name: Blinky
+name: Blinky_Self-Hosted
 
 on:
   workflow_dispatch:
