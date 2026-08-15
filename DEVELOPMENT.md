@@ -1,5 +1,8 @@
 ## To Do
 
+- add makefile to compile & run native_sim
+- implement emul i2c & spi bmi190
+- implement emul gpio
 
 ## Done
 

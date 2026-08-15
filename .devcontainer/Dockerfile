@@ -123,5 +123,5 @@ reset-ncs() {
 }
 
 # Set default environment on interactive load, change if preferred
-use-vanilla v4.2.2
+use-vanilla v4.2.2 0.17.0
 EOF

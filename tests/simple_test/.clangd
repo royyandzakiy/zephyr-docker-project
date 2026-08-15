@@ -18,15 +18,15 @@ CompileFlags:
     # Test-specific includes
     - -I/workspaces/zephyr-emul-project/build_tests/zephyr/include/generated
     - -I/workspaces/zephyr-emul-project/build_tests/zephyr/include
-    - -I/root/ncs/v3.3.0/zephyr/include
-    - -I/root/ncs/v3.3.0/zephyr/include/zephyr
-    - -I/root/ncs/v3.3.0/zephyr/include/zephyr/arch/native
-    - -I/root/ncs/v3.3.0/zephyr/include/zephyr/arch
-    - -I/root/ncs/v3.3.0/zephyr/include/zephyr/sys
-    - -I/root/ncs/v3.3.0/zephyr/include/zephyr/kernel
-    - -I/root/ncs/v3.3.0/zephyr/subsys/testsuite/ztest/include
-    - -I/root/ncs/v3.3.0/zephyr/subsys/testsuite
-    - -I/root/ncs/v3.3.0/zephyr/subsys
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/arch/native
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/arch
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/sys
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/kernel
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/subsys/testsuite/ztest/include
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/subsys/testsuite
+    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/subsys
     
     # Include the build directory for generated files
     - -I/workspaces/zephyr-emul-project/build_tests
