@@ -1,43 +1,53 @@
-- what is zephyr
-    - zephyr history, architecture, examples, myths
-    - demo zephyr hello world
-        - project structure
-    - demo zephyr bmi190 reading
-        - project structure
 - preworkshop setup
-    - fork project
+    - use template for project
     - docker installed & running
     - project build & open in devcontainer
-    - run native_sim hello world
+    - build, run native_sim hello world
     - opt: build to selected board, flash
-    - opt: run actions-runner
+    - opt: run local actions-runner
 - workshop
-    - current folder structure + cmake + compilation flow
-    - dts: nrf5340dk, native_sim
-    - hello world: west to compile & flash
-        - nrf5340dk monitor with pyserial
-        - native_sim run .exe
-    - bmi190: west to compile & flash
-        - nrf5340dk reading value, monitor with pyserial
-        - native_sim reading value, run .exe
-
-    - creating simple test ztest
-        - use west build to compile and run
-        - use twister to compile and run
-    - use emul
-        - gpio emul app
-        - i2c emul app
-    - ztest with emul
-    
-    - create shell app
-    - pytest
-        - pytest hello world
-        - pytest shell 
-        - twister pytest hello world
-        - twister pytest shell
-    - twister pytest shell bmi190
-
-    - 
-    - ci: build, run ci/self-hosted
-        - run hello_native_ci, hello_binary_self, hello_nrf53_self
-        - run pytest_shell_native_ci, pytest_shell_binary_self, pytest_shell_nrf53_self
+    - session 1: native_sim
+        - lecture:
+            - what is zephyr
+            - zephyr history, architecture, examples, myths
+            - demo zephyr hello world
+                - project structure
+            - demo zephyr bmi190 reading
+                - project structure
+        - current folder structure + cmake + compilation flow
+        - dts: nrf5340dk, native_sim
+        - hello world: west to compile & flash
+            - nrf5340dk monitor with pyserial
+            - native_sim run .exe
+        - bmi190: west to compile & flash
+            - nrf5340dk reading value, monitor with pyserial
+            - native_sim reading value, run .exe
+    - session 2: ztest
+        - lecture:
+            - why do we test? what are unit tests?
+        - creating simple test ztest
+            - use west build to compile and run
+            - use twister to compile and run
+        - use emul
+            - gpio emul app
+            - i2c emul app
+        - ztest with emul
+    - session 3: pytest
+        - lecture:
+            - the struggle of legacy projects, console log based testing
+            - test farm, exhaustive tests
+        - create shell app
+        - pytest
+            - pytest hello world
+            - pytest shell 
+            - twister pytest hello world
+            - twister pytest shell
+        - twister pytest shell bmi190
+    - sesson 4: ci & self-hosted runners
+        - ci: build, run ci/self-hosted
+            - ensure ci tests runs fine
+                - run: hello_native_ci, pytest_shell_native_ci
+            - ensure self hosted tests runs fine
+                - run: hello_native_self, pytest_shell_native_self
+                - run: hello_binary_self, pytest_shell_binary_self
+                - demo: hello_nrf53_self, pytest_shell_nrf53_self
