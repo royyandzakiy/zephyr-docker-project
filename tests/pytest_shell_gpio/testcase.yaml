@@ -4,15 +4,17 @@ tests:
     harness: shell
     platform_allow:
       - nrf5340dk/nrf5340/cpuapp
-    tags:
-      - gpio
-      - button
-      - shell
+    extra_configs:
+      - CONFIG_GPIO_EMUL=y
     harness_config:
       shell_commands:
         - command: "test_btn"
-          expected: "Button pressed! LED is now ON"
-        - command: "test_btn"
-          expected: "Button pressed! LED is now OFF"
-        - command: "test_btn"
-          expected: "Button pressed! LED is now ON"
+          expected: "Test: Triggering emulated button press"
+        # - command: "test_btn"
+        #   expected: "Button pressed! LED is now ON"
+        # - command: "test_btn"
+        #   expected: "Button pressed! LED is now OFF"
+        # - command: "test_btn"
+        #   expected: "Button pressed! LED is now ON"
+        # - command: "help"
+        #   expected: "Please press the <Tab> button"

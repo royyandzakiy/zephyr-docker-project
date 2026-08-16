@@ -1,0 +1,7 @@
+# hardware-map.yaml
+- connected: true
+  id: '1050073602'
+  platform: nrf5340dk/nrf5340/cpuapp
+  product: J-Link
+  runner: nrfutil
+  serial: /dev/ttyACM1
