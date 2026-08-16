@@ -1,5 +1,7 @@
 ## To Do
 
+- implement emul based shell test for btn, modify pytest_shell
+
 - add makefile to compile & run native_sim
 - implement emul i2c & spi bmi190
 - implement emul gpio

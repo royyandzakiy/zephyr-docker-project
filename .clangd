@@ -1,87 +1,31 @@
-# /workspaces/zephyr-emul-project/.clangd
+# clangd configuration.
+#
+# Flags come from the compilation database CMake generates, not from a
+# hand-maintained include list. Build once and the language server is correct:
+#
+#   west build -b native_sim -d build
+#
+# If you see "file not found" on <zephyr/...> headers, you have not built yet.
+# To point the language server at a different target instead, change the
+# CompilationDatabase path below (e.g. build_nrf53).
+
 CompileFlags:
-  Add:
-    # Architecture definitions
-    - --target=x86_64-unknown-linux-gnu
-    - -D__ZEPHYR__=1
-    - -DARCH_NATIVE=1
-    - -D__ZEPHYR_SUPERVISOR__=1
-    - -DCONFIG_NATIVE_APPLICATION=1
-    - -DCONFIG_NATIVE_SIM=1
-    - -D_GNU_SOURCE=1
-    - -D__STDC_VERSION__=201112L
-    
-    # Force C language mode (this is the key fix!)
-    - -x
-    - c
-    
-    # Standard library includes
-    - -isystem/usr/include
-    - -isystem/usr/local/include
-    - -isystem/usr/include/x86_64-linux-gnu
-    
-    # Zephyr include paths
-    - -I/workspaces/zephyr-emul-project/build/zephyr/include/generated
-    - -I/workspaces/zephyr-emul-project/build/zephyr/include
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/arch/native
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/arch
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/sys
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/kernel
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/include/zephyr/drivers
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/soc
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/subsys
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/subsys/testsuite
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/subsys/testsuite/ztest/include
-    - -I/workdir/zephyr-sdks/v4.2.2/zephyr/dts
-    
-    # Devicetree generated includes
-    - -I/workspaces/zephyr-emul-project/build/zephyr
-    - -I/workspaces/zephyr-emul-project/build/zephyr/include/generated
-    - -include
-    - /workspaces/zephyr-emul-project/build/zephyr/include/generated/autoconf.h
-    
-    # For ZTEST
-    - -DCONFIG_ZTEST=1
-    
-    # GNU extensions
-    - -std=gnu11
-    
-    # Suppress common warnings
-    - -Wno-gnu-zero-variadic-macro-arguments
-    - -Wno-language-extension-token
-    - -Wno-unknown-warning-option
-    - -Wno-unused-command-line-argument
-    - -Wno-unused-parameter
-    - -Wno-unused-variable
-    - -Wno-parentheses-equality
-    - -Wno-missing-braces
-    - -Wno-gnu-designator
-    - -Wno-format
-    - -Wno-pedantic
-    - -Wno-all
-    - -Wno-extra
-    
+  CompilationDatabase: build
+
   Remove:
+    # Flags that are right for the compiler but noisy or unsupported in clangd.
     - -Werror
     - -pedantic
-    - -std=c11
-    - -std=c99
+    - -fno-reorder-functions
+    - -fno-defer-pop
+    - --param=min-pagesize=*
+    - -mfp16-format=*
 
-# Diagnostics configuration
 Diagnostics:
+  # Zephyr headers pull in transitively-used symbols by design.
   UnusedIncludes: None
   MissingIncludes: None
-  Suppress:
-    - pp_file_not_found
-    - unknown_typename
-    - undeclared_var_use
-    - pp_hash_error
-    - fatal_too_many_errors
-    - typecheck_decl_incomplete_type
 
-# Indexing settings
 Index:
   Background: Build
   StandardLibrary: true

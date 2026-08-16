@@ -1,29 +1,49 @@
-common:
-  tags:
-    - test_framework
-    - pytest
-    - shell
-  platform_exclude: qemu_rx
-  filter: CONFIG_SERIAL and not CONFIG_SMP and dt_chosen_enabled("zephyr,shell-uart")
-  extra_configs:
-    - arch:posix:CONFIG_UART_NATIVE_PTY_0_ON_STDINOUT=y
-    - platform:iotdk/arc_iot:CONFIG_ARC_IOT_CUSTOM_CPU_IDLE=y
-  min_ram: 40
-  integration_platforms:
-    - native_sim
-    - qemu_cortex_m3
+# common:
+#   tags:
+#     - test_framework
+#     - pytest
+#     - shell
+#   platform_exclude: qemu_rx
+#   filter: CONFIG_SERIAL and not CONFIG_SMP and dt_chosen_enabled("zephyr,shell-uart")
+#   extra_configs:
+#     - arch:posix:CONFIG_UART_NATIVE_PTY_0_ON_STDINOUT=y
+#     - platform:iotdk/arc_iot:CONFIG_ARC_IOT_CUSTOM_CPU_IDLE=y
+#   min_ram: 40
+#   integration_platforms:
+#     - native_sim
+#     - qemu_cortex_m3
+# tests:
+#   sample.pytest.shell:
+#     harness: pytest
+#   sample.pytest.shell.vt100_colors_off:
+#     harness: pytest
+#     extra_configs:
+#       - CONFIG_SHELL_VT100_COLORS=n
+#   sample.harness.shell:
+#     harness: shell
+#     harness_config:
+#       shell_commands: &kernel_commands
+#         - command: "kernel cycles"
+#           expected: "cycles: .* hw cycles"
+#         - command: "kernel version"
+#           expected: "Zephyr version .*"
+
 tests:
-  sample.pytest.shell:
-    harness: pytest
-  sample.pytest.shell.vt100_colors_off:
-    harness: pytest
-    extra_configs:
-      - CONFIG_SHELL_VT100_COLORS=n
-  sample.harness.shell:
+  gpio.button.toggle:
+    build_only: false
     harness: shell
+    platform_allow:
+      - nrf5340dk/nrf5340/cpuapp
+    extra_configs:
+      - CONFIG_GPIO_EMUL=y
+    extra_args:
+      # Explicitly tell Twister which overlay to use
+      - "DTC_OVERLAY_FILE=../../boards/nrf5340dk_test.overlay"
     harness_config:
-      shell_commands: &kernel_commands
-        - command: "kernel cycles"
-          expected: "cycles: .* hw cycles"
-        - command: "kernel version"
-          expected: "Zephyr version .*"
+      shell_commands:
+        - command: "test_btn"
+          expected: "Button pressed! LED is now ON"
+        - command: "test_btn"
+          expected: "Button pressed! LED is now OFF"
+        - command: "test_btn"
+          expected: "Button pressed! LED is now ON"
