@@ -1,9 +1,9 @@
 # Testing on nRF5340dk (on-target)
 
 ```bash
-west build -b nrf5340dk/nrf5340/cpuapp -p always -d build_nrf53_pytest_shell -s tests/pytest_shell -p always
+west build -b nrf5340dk/nrf5340/cpuapp -p always -d build_nrf53_test_gpio_toggle -s tests/drivers/gpio_button_toggle -p always
 
-nrfutil device program --firmware build_nrf53_pytest_shell/zephyr/zephyr.hex --serial-number 1050073602
+nrfutil device program --firmware build_nrf53_test_gpio_toggle/zephyr/zephyr.hex --serial-number 1050073602
 
 python3 -m serial.tools.miniterm --raw /dev/ttyACM1 115200
 ```
@@ -28,7 +28,7 @@ west build -b native_sim -p always --
 ```
 
 ```bash
-zephyr-emul-project/build/zephyr-emul-project/zephyr/zephyr.exe
+zephyr-docker-project/build/zephyr/zephyr.exe
 ```
 
 ```bash
@@ -54,13 +54,13 @@ twister -p native_sim/native -T tests/simple_test
 
 ```bash
 # Output
-Renaming previous output directory to /workspaces/zephyr-emul-project/twister-out.11
+Renaming previous output directory to /workspaces/zephyr-docker-project/twister-out.11
 INFO    - Using Ninja..
 INFO    - Zephyr version: fd9204a02d52
 INFO    - Using 'zephyr' toolchain.
 INFO    - Building initial testsuite list...
 INFO    - Built testsuite list in 0.01 seconds
-INFO    - Writing JSON report /workspaces/zephyr-emul-project/twister-out/testplan.json
+INFO    - Writing JSON report /workspaces/zephyr-docker-project/twister-out/testplan.json
 INFO    - JOBS: 16
 INFO    - Adding tasks to the queue...
 INFO    - Added initial list of jobs to queue
@@ -70,9 +70,9 @@ INFO    - 1 of 1 executed test configurations passed (100.00%), 0 built (not run
 INFO    - 2 of 2 executed test cases passed (100.00%) on 1 out of total 1386 platforms (0.07%).
 INFO    - 1 test configurations executed on platforms, 0 test configurations were only built.
 INFO    - Saving reports...
-INFO    - Writing JSON report /workspaces/zephyr-emul-project/twister-out/twister.json
-INFO    - Writing xunit report /workspaces/zephyr-emul-project/twister-out/twister.xml...
-INFO    - Writing xunit report /workspaces/zephyr-emul-project/twister-out/twister_report.xml...
+INFO    - Writing JSON report /workspaces/zephyr-docker-project/twister-out/twister.json
+INFO    - Writing xunit report /workspaces/zephyr-docker-project/twister-out/twister.xml...
+INFO    - Writing xunit report /workspaces/zephyr-docker-project/twister-out/twister_report.xml...
 INFO    - Run completed
 ```
 
@@ -84,7 +84,7 @@ west build -p -b native_sim/native tests/simple_test -d build_tests
 ```
 
 ```bash
-zephyr-emul-project/build_tests/simple_test/zephyr/zephyr.exe
+zephyr-docker-project/build_tests/simple_test/zephyr/zephyr.exe
 
 # Output
 WARNING: Using a test - not safe - entropy source
@@ -115,9 +115,9 @@ SUITE PASS - 100.00% [test_simple_tests]: pass = 2, fail = 0, skip = 0, total = 
 
 ===================================================================
 PROJECT EXECUTION SUCCESSFUL
-root@f0aaad86c393:/workspaces/zephyr-emul-project# ls build_tests/compile_commands.json
+root@f0aaad86c393:/workspaces/zephyr-docker-project# ls build_tests/compile_commands.json
 ls: cannot access 'build_tests/compile_commands.json': No such file or directory
-root@f0aaad86c393:/workspaces/zephyr-emul-project# 
+root@f0aaad86c393:/workspaces/zephyr-docker-project# 
 ```
 
 ### `pytest_basic` build & run
@@ -128,13 +128,13 @@ twister -p native_sim/native -T tests/pytest_basic -vvv
 
 ```bash
 # Output
-Renaming previous output directory to /workspaces/zephyr-emul-project/twister-out.22
+Renaming previous output directory to /workspaces/zephyr-docker-project/twister-out.22
 INFO    - Using Ninja..
 INFO    - Zephyr version: fd9204a02d52
 INFO    - Using 'zephyr' toolchain.
 INFO    - Building initial testsuite list...
 INFO    - Built testsuite list in 0.00 seconds
-INFO    - Writing JSON report /workspaces/zephyr-emul-project/twister-out/testplan.json
+INFO    - Writing JSON report /workspaces/zephyr-docker-project/twister-out/testplan.json
 INFO    - JOBS: 16
 INFO    - Adding tasks to the queue...
 INFO    - Added initial list of jobs to queue
@@ -168,9 +168,9 @@ INFO    - 1 of 1 executed test configurations passed (100.00%), 0 built (not run
 INFO    - 2 of 2 executed test cases passed (100.00%) on 1 out of total 1386 platforms (0.07%).
 INFO    - 1 test configurations executed on platforms, 0 test configurations were only built.
 INFO    - Saving reports...
-INFO    - Writing JSON report /workspaces/zephyr-emul-project/twister-out/twister.json
-INFO    - Writing xunit report /workspaces/zephyr-emul-project/twister-out/twister.xml...
-INFO    - Writing xunit report /workspaces/zephyr-emul-project/twister-out/twister_report.xml...
+INFO    - Writing JSON report /workspaces/zephyr-docker-project/twister-out/twister.json
+INFO    - Writing xunit report /workspaces/zephyr-docker-project/twister-out/twister.xml...
+INFO    - Writing xunit report /workspaces/zephyr-docker-project/twister-out/twister_report.xml...
 INFO    - Run completed
 ```
 
@@ -182,13 +182,13 @@ twister -p native_sim/native -T tests/pytest_shell -vvv
 
 ```bash
 # Output
-Renaming previous output directory to /workspaces/zephyr-emul-project/twister-out.23
+Renaming previous output directory to /workspaces/zephyr-docker-project/twister-out.23
 INFO    - Using Ninja..
 INFO    - Zephyr version: fd9204a02d52
 INFO    - Using 'zephyr' toolchain.
 INFO    - Building initial testsuite list...
 INFO    - Built testsuite list in 0.00 seconds
-INFO    - Writing JSON report /workspaces/zephyr-emul-project/twister-out/testplan.json
+INFO    - Writing JSON report /workspaces/zephyr-docker-project/twister-out/testplan.json
 INFO    - JOBS: 16
 INFO    - Adding tasks to the queue...
 INFO    - Added initial list of jobs to queue
@@ -227,8 +227,8 @@ INFO    - 3 of 3 executed test configurations passed (100.00%), 0 built (not run
 INFO    - 5 of 5 executed test cases passed (100.00%) on 1 out of total 1386 platforms (0.07%).
 INFO    - 3 test configurations executed on platforms, 0 test configurations were only built.
 INFO    - Saving reports...
-INFO    - Writing JSON report /workspaces/zephyr-emul-project/twister-out/twister.json
-INFO    - Writing xunit report /workspaces/zephyr-emul-project/twister-out/twister.xml...
-INFO    - Writing xunit report /workspaces/zephyr-emul-project/twister-out/twister_report.xml...
+INFO    - Writing JSON report /workspaces/zephyr-docker-project/twister-out/twister.json
+INFO    - Writing xunit report /workspaces/zephyr-docker-project/twister-out/twister.xml...
+INFO    - Writing xunit report /workspaces/zephyr-docker-project/twister-out/twister_report.xml...
 INFO    - Run completed
 ```
