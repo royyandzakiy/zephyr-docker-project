@@ -37,8 +37,6 @@ tests:
     extra_configs:
       - CONFIG_GPIO_EMUL=y
     extra_args:
-      # Explicitly tell Twister which overlay to use
-      - "DTC_OVERLAY_FILE=../../boards/nrf5340dk_test.overlay"
     harness_config:
       shell_commands:
         - command: "test_btn"

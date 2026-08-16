@@ -28,11 +28,13 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 static struct gpio_callback button_cb_data;
 
+static bool led_state = false;
+
 void button_pressed_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
     gpio_pin_toggle_dt(&led);
-    int state = gpio_pin_get_dt(&led);
-    printk("Button pressed! LED is now %s\n", state ? "ON" : "OFF");
+    led_state = !led_state;
+    printk("Button pressed! LED is now %s\n", led_state ? "ON" : "OFF");
 }
 
 int main(void)
