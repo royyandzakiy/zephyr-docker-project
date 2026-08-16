@@ -9,7 +9,15 @@ python3 -m serial.tools.miniterm --raw /dev/ttyACM1 115200
 ```
 
 ```bash
-west twister -p nrf5340dk/nrf5340/cpuapp --device-testing --device-serial /dev/ttyACM1 --west-flash="--snr 1050073602" -T tests/pytest_shell_gpio
+west twister --device-testing --hardware-map hardware-map.yaml -T tests/drivers/gpio_button_toggle
+
+# or, without hardware-map
+west twister \
+  -p nrf5340dk/nrf5340/cpuapp \
+  --device-testing \
+  --device-serial /dev/ttyACM1 \
+  --west-flash-extra="--runner=nrfutil,--dev-id=1050073602" \
+  -T tests/drivers/gpio_button_toggle
 ```
 
 # Testing on Native Sim (off-target)

@@ -28,8 +28,8 @@ static int cmd_test_button(const struct shell *shell, size_t argc, char **argv)
 
 SHELL_CMD_REGISTER(test_btn, NULL, "Trigger emulated button press", cmd_test_button);
 
-#if defined(AUTO_TEST_AFTER_BOOT)
 /* Auto-test after boot (optional) */
+#if defined(AUTO_TEST_AFTER_BOOT)
 static void auto_test_handler(struct k_work *work)
 {
     printk("Auto-test: Triggering button in 5 seconds...\n");
