@@ -1,15 +1,30 @@
-## Testing
-### Native Sim 
+# Testing on nRF5340dk (on-target)
 
 ```bash
-root@f0aaad86c393:/workspaces/zephyr-emul-project# west build -b native_sim -p always --
-[0/3] Performing build step for 'zephyr-emul-project'
-[2/2] Running utility command for native_runner_executable
-[3/3] Completed 'zephyr-emul-project'
+west build -b nrf5340dk/nrf5340/cpuapp -p always -d build_nrf53_pytest_shell -s tests/pytest_shell -p always -- -DEXTRA_DTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/nrf5340dk_test.overlay"
+
+nrfutil device program --firmware build_nrf53_pytest_shell/zephyr/zephyr.hex --serial-number 1050073602
+
+python3 -m serial.tools.miniterm --raw /dev/ttyACM1 115200
 ```
 
 ```bash
-root@f0aaad86c393:/workspaces/zephyr-emul-project# /workspaces/zephyr-emul-project/build/zephyr-emul-project/zephyr/zephyr.exe
+ west twister -p nrf5340dk/nrf5340/cpuapp --device-testing --device-serial /dev/ttyACM1 --west-flash="--snr 1050073602" -T tests/pytest_shell
+```
+
+# Testing on Native Sim (off-target)
+## Build & Run
+
+```bash
+west build -b native_sim -p always --
+```
+
+```bash
+zephyr-emul-project/build/zephyr-emul-project/zephyr/zephyr.exe
+```
+
+```bash
+# serial monitor
 WARNING: Using a test - not safe - entropy source
 *** Booting nRF Connect SDK v3.3.0-ba167d9f3db4 ***
 *** Using Zephyr OS v4.3.99-fd9204a02d52 ***
@@ -19,7 +34,6 @@ Hello from Zephyr RTOS! count = 3
 Hello from Zephyr RTOS! count = 4
 ^C
 Stopped at 1.790s
-root@f0aaad86c393:/workspaces/zephyr-emul-project# 
 ```
 
 ## Testing
@@ -27,8 +41,10 @@ root@f0aaad86c393:/workspaces/zephyr-emul-project#
 ### `simple_test` Twister based test build & run
 
 ```bash
-root@f0aaad86c393:/workspaces/zephyr-emul-project# twister -p native_sim/native -T tests/simple_test
+twister -p native_sim/native -T tests/simple_test
+```
 
+```bash
 # Output
 Renaming previous output directory to /workspaces/zephyr-emul-project/twister-out.11
 INFO    - Using Ninja..
@@ -50,18 +66,19 @@ INFO    - Writing JSON report /workspaces/zephyr-emul-project/twister-out/twiste
 INFO    - Writing xunit report /workspaces/zephyr-emul-project/twister-out/twister.xml...
 INFO    - Writing xunit report /workspaces/zephyr-emul-project/twister-out/twister_report.xml...
 INFO    - Run completed
-root@f0aaad86c393:/workspaces/zephyr-emul-project# 
 ```
 
 ### `simple_test` West based test build & run
 
 ```bash
 rm -rf build_tests
-west build -p -b native_sim/native tests/simple_test -d build_tests -- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+west build -p -b native_sim/native tests/simple_test -d build_tests
 ```
 
 ```bash
-root@f0aaad86c393:/workspaces/zephyr-emul-project# /workspaces/zephyr-emul-project/build_tests/simple_test/zephyr/zephyr.exe
+zephyr-emul-project/build_tests/simple_test/zephyr/zephyr.exe
+
+# Output
 WARNING: Using a test - not safe - entropy source
 *** Booting nRF Connect SDK v3.3.0-ba167d9f3db4 ***
 *** Using Zephyr OS v4.3.99-fd9204a02d52 ***
@@ -98,10 +115,11 @@ root@f0aaad86c393:/workspaces/zephyr-emul-project#
 ### `pytest_basic` build & run
 
 ```bash
-root@f0aaad86c393:/workspaces/zephyr-emul-project# twister -p native_sim/native -T tests/pytest_basic -vvv
+twister -p native_sim/native -T tests/pytest_basic -vvv
 ```
 
 ```bash
+# Output
 Renaming previous output directory to /workspaces/zephyr-emul-project/twister-out.22
 INFO    - Using Ninja..
 INFO    - Zephyr version: fd9204a02d52
@@ -151,10 +169,11 @@ INFO    - Run completed
 ### `pytest_shell` build & run
 
 ```bash
-root@f0aaad86c393:/workspaces/zephyr-emul-project# twister -p native_sim/native -T tests/pytest_shell -vvv
+twister -p native_sim/native -T tests/pytest_shell -vvv
 ```
 
 ```bash
+# Output
 Renaming previous output directory to /workspaces/zephyr-emul-project/twister-out.23
 INFO    - Using Ninja..
 INFO    - Zephyr version: fd9204a02d52
