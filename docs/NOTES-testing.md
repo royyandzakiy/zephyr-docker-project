@@ -9,7 +9,7 @@ python3 -m serial.tools.miniterm --raw /dev/ttyACM1 115200
 ```
 
 ```bash
-west twister -p nrf5340dk/nrf5340/cpuapp --device-testing --device-serial /dev/ttyACM1 --west-flash="--snr 1050073602" -T tests/pytest_shell
+west twister -p nrf5340dk/nrf5340/cpuapp --device-testing --device-serial /dev/ttyACM1 --west-flash="--snr 1050073602" -T tests/pytest_shell_gpio
 ```
 
 # Testing on Native Sim (off-target)
