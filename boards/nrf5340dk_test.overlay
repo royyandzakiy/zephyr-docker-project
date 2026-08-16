@@ -1,3 +1,5 @@
+/* boards/nrf5340dk_test.overlay */
+
 / {
     /* Add emulated GPIO controller - ONLY for the button */
     emul_gpio: gpio_emul {
@@ -14,6 +16,3 @@
     gpios = <&emul_gpio 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
     label = "Emulated Button";
 };
-
-/* Keep EVERYTHING else exactly as it was */
-/* led0, button1, aliases all stay untouched */

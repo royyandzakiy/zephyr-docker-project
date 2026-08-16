@@ -27,6 +27,7 @@ static int cmd_test_button(const struct shell *shell, size_t argc, char **argv)
 
 SHELL_CMD_REGISTER(test_btn, NULL, "Trigger emulated button press", cmd_test_button);
 
+#if defined(AUTO_TEST_AFTER_BOOT)
 /* Auto-test after boot (optional) */
 static void auto_test_handler(struct k_work *work)
 {
@@ -45,3 +46,4 @@ static int test_harness_init(void)
 }
 
 SYS_INIT(test_harness_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+#endif

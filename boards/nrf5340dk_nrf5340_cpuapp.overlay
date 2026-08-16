@@ -1,3 +1,5 @@
+/* boards/nrf5340dk_nrf5340_cpuapp.overlay */
+
 / {
     /* We redefine the aliases to point to the actual physical nodes */
     aliases {

@@ -2,6 +2,7 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
+# Setup Test overlay, needs to be defined before find_package
 set(TEST_OVERLAY "${CMAKE_CURRENT_SOURCE_DIR}/../../boards/nrf5340dk_test.overlay")
 
 if(DEFINED TEST_OVERLAY_PATH)
@@ -23,8 +24,4 @@ target_sources(app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/main.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/biz_logic.c
     ${CMAKE_CURRENT_SOURCE_DIR}/test_harness.c
-)
-
-target_compile_definitions(app PRIVATE
-    TEST_BUILD=1
 )
