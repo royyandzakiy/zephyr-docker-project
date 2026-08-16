@@ -1,15 +1,11 @@
-# SPDX-License-Identifier: Apache-2.0
+# tests/pytest_shell_gpio/CMakeLists.txt
 
 cmake_minimum_required(VERSION 3.20.0)
 
 # Setup Test overlay, needs to be defined before find_package
-set(TEST_OVERLAY "${CMAKE_CURRENT_SOURCE_DIR}/../../boards/nrf5340dk_test.overlay")
+set(TEST_OVERLAY "${CMAKE_CURRENT_SOURCE_DIR}/../../boards/nrf5340dk_test_gpio_emul.overlay")
 
-if(DEFINED TEST_OVERLAY_PATH)
-    set(TEST_OVERLAY ${TEST_OVERLAY_PATH})
-endif()
-
-# Check and apply the overlay
+# Check availability, then apply overlay
 if(EXISTS ${TEST_OVERLAY})
     set(EXTRA_DTC_OVERLAY_FILE ${TEST_OVERLAY})
     message(STATUS "📄 Using extra test overlay: ${TEST_OVERLAY}")

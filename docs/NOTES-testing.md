@@ -1,7 +1,7 @@
 # Testing on nRF5340dk (on-target)
 
 ```bash
-west build -b nrf5340dk/nrf5340/cpuapp -p always -d build_nrf53_pytest_shell -s tests/pytest_shell -p always -- -DEXTRA_DTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/nrf5340dk_test.overlay"
+west build -b nrf5340dk/nrf5340/cpuapp -p always -d build_nrf53_pytest_shell -s tests/pytest_shell -p always
 
 nrfutil device program --firmware build_nrf53_pytest_shell/zephyr/zephyr.hex --serial-number 1050073602
 
@@ -9,7 +9,7 @@ python3 -m serial.tools.miniterm --raw /dev/ttyACM1 115200
 ```
 
 ```bash
- west twister -p nrf5340dk/nrf5340/cpuapp --device-testing --device-serial /dev/ttyACM1 --west-flash="--snr 1050073602" -T tests/pytest_shell
+west twister -p nrf5340dk/nrf5340/cpuapp --device-testing --device-serial /dev/ttyACM1 --west-flash="--snr 1050073602" -T tests/pytest_shell
 ```
 
 # Testing on Native Sim (off-target)
