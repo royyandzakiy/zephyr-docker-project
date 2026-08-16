@@ -117,7 +117,7 @@ jobs:
           set -euo pipefail
           nrfutil --version
           echo "--- connected probes ---"
-          nrfutil device list --json | jq -r '.. | .serialNumber? // empty' | tr -d '\r' > /tmp/snrs.txt
+          nrfutil device list --json | jq -r '.. | .serialNumber? // empty' | sed 's/^0*//' | tr -d '\r' > /tmp/snrs.txt
           cat /tmp/snrs.txt
           if ! grep -qx "$CI_NRF5340DK_SNR" /tmp/snrs.txt; then
             echo "::error::J-Link $CI_NRF5340DK_SNR not found. Check USB passthrough / board power."

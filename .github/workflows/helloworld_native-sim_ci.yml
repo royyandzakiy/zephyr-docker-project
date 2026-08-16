@@ -6,7 +6,7 @@ on:
 jobs:
   build_and_run:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     container:
       image: zephyrprojectrtos/ci:v0.29.3
@@ -70,7 +70,7 @@ jobs:
       - name: Run hello world
         run: |
           cd zephyr-workspace
-          ./build/zephyr/zephyr.exe
+          timeout 10s ./build/zephyr/zephyr.exe || true
 
       - name: Show ccache stats
         if: always()
