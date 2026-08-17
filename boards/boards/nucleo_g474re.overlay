@@ -1,0 +1,17 @@
+/ {
+    /* Define additional physical GPIO node for Hall sensor if not in base DT */
+    gpio_keys {
+        compatible = "gpio-keys";
+        button1: button_1 {
+            gpios = <&gpioc 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; /* PC0 as Hall sensor */
+            label = "Hall Sensor";
+        };
+    };
+
+    /* Point aliases to the physical nodes */
+    aliases {
+        led0 = &user_led;   /* Physical Green LED (PA5) */
+        sw0 = &user_button; /* Physical User B1 Button (PC13) */
+        hal0 = &button1;    /* Custom Hall sensor pin (PC0) */
+    };
+};

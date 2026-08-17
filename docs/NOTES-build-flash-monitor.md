@@ -33,6 +33,24 @@ west flash -d build
 python3 -m serial.tools.miniterm /dev/ttyACM0 115200 --raw
 ```
 
+Error: Espressif toolchain not yet installed
+
+```bash
+Make Error at /workdir/zephyr-sdks/v4.2.2/zephyr/cmake/compiler/gcc/target.cmake:11 (message):
+  C compiler
+  /workdir/zephyr-sdks/toolchains/zephyr-sdk-0.17.0/xtensa-espressif_esp32s3_zephyr-elf/bin/xtensa-espressif_esp32s3_zephyr-elf-gcc
+  not found - Please check your toolchain installation
+```
+
+```bash
+west sdk list
+
+west sdk install -t xtensa-espressif_esp32s3_zephyr-elf
+west sdk install -t xtensa-espressif_esp32_zephyr-elf
+
+west blobs fetch hal_espressif
+```
+
 ## STM
 
 ```bash

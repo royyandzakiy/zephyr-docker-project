@@ -3,9 +3,21 @@
 ```bash
 west build -b nrf5340dk/nrf5340/cpuapp -p always -d build_nrf53_test_gpio_toggle -s tests/drivers/gpio_button_toggle -p always
 
+west flash -d build_nrf53_test_gpio_toggle --runner nrfutil -- --dev-id 1050073602
+# or
 nrfutil device program --firmware build_nrf53_test_gpio_toggle/zephyr/zephyr.hex --serial-number 1050073602
 
 python3 -m serial.tools.miniterm --raw /dev/ttyACM1 115200
+```
+
+```bash
+# hardware-map.yaml
+- connected: true
+  id: '1050073602'
+  platform: nrf5340dk/nrf5340/cpuapp
+  product: J-Link
+  runner: nrfutil
+  serial: /dev/ttyACM1
 ```
 
 ```bash
@@ -61,6 +73,63 @@ INFO    - Writing JSON report /workspaces/zephyr-docker-project/twister-out/twis
 INFO    - Writing xunit report /workspaces/zephyr-docker-project/twister-out/twister.xml...
 INFO    - Writing xunit report /workspaces/zephyr-docker-project/twister-out/twister_report.xml...
 INFO    - Run completed
+```
+
+# Testing on ESP32S3 (on-target)
+
+```bash
+west build -b esp32s3_devkitc/esp32s3/procpu -s tests/drivers/gpio_button_toggle -p always -d build_esp32s3_test_gpio_toggle
+west build -b esp32_devkitc/esp32/procpu -s tests/drivers/gpio_button_toggle -p always -d build_esp32_test_gpio_toggle  
+
+west flash --runner esptool --esp-device /dev/ttyUSB0 -d build_esp32s3_test_gpio_toggle
+
+python3 -m serial.tools.miniterm --raw /dev/ttyACM2 115200
+west espressif monitor
+# 
+```
+
+```bash
+west twister \
+  -p esp32s3_devkitc/esp32s3/procpu \
+  --device-testing \
+  --device-serial /dev/ttyUSB0 \
+  --west-flash-extra="--runner=esptool,--esp-device=/dev/ttyUSB0" \
+  -T tests/drivers/gpio_button_toggle
+```
+
+```bash
+# hardware-map.yaml
+- connected: true
+  id: '/dev/ttyUSB0'
+  platform: esp32s3_devkitc/esp32s3/procpu
+  product: ESP32-S3
+  runner: esptool
+  serial: /dev/ttyUSB0
+  baud: 115200
+```
+
+# Testing on Nucleo G4 (on-target)
+
+```bash
+west build -b nucleo_g474re -s tests/drivers/gpio_button_toggle -p always -d build_nucleog4_test_gpio_toggle
+
+west flash -d build_nucleog4_test_gpio_toggle --runner nrfutil -- --dev-id 1050073602
+# or
+nrfutil device program --firmware build_nucleog4_test_gpio_toggle/zephyr/zephyr.hex --serial-number 1050073602
+
+python3 -m serial.tools.miniterm --raw /dev/ttyACM1 115200
+```
+
+```bash
+west twister --device-testing --hardware-map hardware-map.yaml -T tests/drivers/gpio_button_toggle
+
+# or, without hardware-map
+west twister \
+  -p nrf5340dk/nrf5340/cpuapp \
+  --device-testing \
+  --device-serial /dev/ttyACM1 \
+  --west-flash-extra="--runner=nrfutil,--dev-id=1050073602" \
+  -T tests/drivers/gpio_button_toggle
 ```
 
 # Testing on Native Sim (off-target)
