@@ -9,19 +9,35 @@
 #define BUTTON_NODE DT_ALIAS(sw0)
 static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(BUTTON_NODE, gpios);
 
+static inline int button_active_raw(void)
+{
+    return (button.dt_flags & GPIO_ACTIVE_LOW) ? 0 : 1;
+}
+
 void trigger_emulated_button_press(void)
 {
-    printk("Test: Triggering emulated button press\n");
-    
-    const struct device *emul_dev = button.port;
-    gpio_emul_input_set(emul_dev, button.pin, 0);  // Press
+    const int active = button_active_raw();
+    const int inactive = !active;
+
+    gpio_emul_input_set(button.port, button.pin, inactive);
+    k_sleep(K_MSEC(20));
+
+    gpio_emul_input_set(button.port, button.pin, active);
     k_sleep(K_MSEC(50));
-    gpio_emul_input_set(emul_dev, button.pin, 1);  // Release
+
+    gpio_emul_input_set(button.port, button.pin, inactive);
 }
 
 /* Shell command */
-static int cmd_test_button(const struct shell *shell, size_t argc, char **argv)
+static int cmd_test_button(const struct shell *sh, size_t argc, char **argv)
 {
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+
+    /* Shares the shell's TX path — cannot split the echo of the
+     * command that invoked it. */
+    shell_print(sh, "Test: Triggering emulated button press");
+
     trigger_emulated_button_press();
     return 0;
 }

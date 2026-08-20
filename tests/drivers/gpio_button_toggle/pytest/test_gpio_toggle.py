@@ -5,34 +5,19 @@ from twister_harness import Shell
 
 logger = logging.getLogger(__name__)
 
+# LED starts off; every press toggles, including the first.
+EXPECTED_STATES = ('ON', 'OFF', 'ON', 'OFF', 'ON')
+
 
 def test_gpio_button_toggle(shell: Shell):
-    # 1st press: Registers/triggers initial setup state
-    logger.info('Sending 1st test_btn command')
-    lines = shell.exec_command('test_btn')
-    assert any('Test: Triggering emulated button press' in line for line in lines), \
-        'Initial test_btn output missing trigger confirmation'
+    for press, expected in enumerate(EXPECTED_STATES, start=1):
+        logger.info('Press %d: expecting LED %s', press, expected)
+        lines = shell.exec_command('test_btn')
 
-    # 2nd press: LED turns ON
-    logger.info('Sending 2nd test_btn command')
-    lines = shell.exec_command('test_btn')
-    assert any('Button pressed! LED is now ON' in line for line in lines), \
-        'Expected LED to turn ON on 2nd press'
+        assert any('Test: Triggering emulated button press' in line
+                   for line in lines), \
+            f'press {press}: shell command produced no trigger line'
 
-    # 3rd press: LED turns OFF
-    logger.info('Sending 3rd test_btn command')
-    lines = shell.exec_command('test_btn')
-    assert any('Button pressed! LED is now OFF' in line for line in lines), \
-        'Expected LED to turn OFF on 3rd press'
-
-    # 4th press: LED turns ON again
-    logger.info('Sending 4th test_btn command')
-    lines = shell.exec_command('test_btn')
-    assert any('Button pressed! LED is now ON' in line for line in lines), \
-        'Expected LED to turn ON on 4th press'
-
-    # 5th press: LED turns OFF again
-    logger.info('Sending 5th test_btn command')
-    lines = shell.exec_command('test_btn')
-    assert any('Button pressed! LED is now OFF' in line for line in lines), \
-        'Expected LED to turn OFF on 5th press'
+        assert any(f'Button pressed! LED is now {expected}' in line
+                   for line in lines), \
+            f'press {press}: expected LED {expected}, got {lines}'
