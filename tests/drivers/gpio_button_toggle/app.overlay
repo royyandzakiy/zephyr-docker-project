@@ -1,4 +1,4 @@
-/* tests/drivers/gpio_button_toggle/boards/test_gpio_emul.overlay */
+/* tests/drivers/gpio_button_toggle/app.overlay */
 #include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
