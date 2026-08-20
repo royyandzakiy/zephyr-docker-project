@@ -158,11 +158,23 @@ west twister \
 # Testing on Native Sim (off-target)
 
 ```bash
-west build -p always -b native_sim/native -s tests/drivers/gpio_button_toggle -d build_nativesim_test_gpio_toggle -- -DDTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/native_sim.overlay"
+west build \
+  -p always \
+  -b native_sim/native \
+  -s tests/drivers/gpio_button_toggle \
+  -d build_nativesim_test_gpio_toggle -- \
+  -DDTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/native_sim_native.overlay" \
+  -DEXTRA_CONF_FILE="/workspaces/zephyr-docker-project/boards/native_sim_native.conf"
 
 build_nativesim_test_gpio_toggle/zephyr/zephyr.exe
 ```
 
 ```bash
-twister -p native_sim/native -T tests/drivers/gpio_button_toggle -- -DDTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/native_sim.overlay"
+twister -p native_sim/native -T tests/drivers/gpio_button_toggle -- -DDTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/native_sim_native.overlay"
+
+west twister \
+  -p native_sim/native \
+  -T tests/drivers/gpio_button_toggle \
+  --extra-args=DTC_OVERLAY_FILE=/workspaces/zephyr-docker-project/boards/native_sim_native.overlay \
+  --extra-args=EXTRA_CONF_FILE="/workspaces/zephyr-docker-project/boards/native_sim_native.conf"
 ```
