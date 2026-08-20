@@ -35,7 +35,7 @@ int main(void)
         return 0;
     }
 
-    if (!device_is_ready(led.port)) {
+    if (led.port == NULL || !device_is_ready(led.port)) {
         printk("Error: LED device %s is not ready\n", led.port->name);
         return 0;
     }
