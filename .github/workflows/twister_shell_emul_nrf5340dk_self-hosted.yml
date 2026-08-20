@@ -159,9 +159,10 @@ jobs:
 
           cat << EOF > hardware-map.yaml
           - connected: true
-            id: ${CI_NRF5340DK_SNR}
+            id: "${CI_NRF5340DK_SNR}"
             platform: nrf5340dk/nrf5340/cpuapp
             product: J-Link
+            runner: nrfutil
             serial: ${SERIAL_PORT}
           EOF
 
