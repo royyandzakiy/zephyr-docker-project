@@ -78,7 +78,6 @@ INFO    - Run completed
 # Testing on ESP32S3 (on-target)
 
 ```bash
-# esp32s3 does NOT have a built in switch0 and led0, hence the overlay needs to be called explicitly
 west build -b esp32s3_devkitc/esp32s3/procpu \
   -s tests/drivers/gpio_button_toggle \
   -p always \
@@ -89,6 +88,11 @@ west flash --runner esp32 --esp-device /dev/ttyACM0 -d build_esp32s3_test_gpio_t
 
 python3 -m serial.tools.miniterm --raw /dev/ttyACM0 115200
 ```
+
+added flags:
+- `--flash-before`: by default is, the harness opens the serial port first, then flashes, causing it to be stale and fail to read. flashes first and opens the serial connection afterwards, and it propagates into the generated pytest command
+- `--extra-args=DTC_OVERLAY_FILE`: esp32s3 does NOT have a built in switch0 and led0 in its default .dts files, hence the overlay needs to be called explicitly. another thing is, currently the esp32s3 is stored inside the root/boards, hence does NOT get automatically captured because our target is not to root, but instead to `tests/drivers/gpio_button_toggle`
+- `--west-runner esp32`: required to be able to flash. the esp32 is universal for espressif chips, not just the esp32 type board.
 
 ```bash
 west twister \
