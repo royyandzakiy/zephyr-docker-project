@@ -1,3 +1,4 @@
+/* tests/drivers/gpio_button_toggle/boards/nucleo_g474re_test_gpio_emul.overlay */
 / {
     /* Add emulated GPIO controller */
     emul_gpio: gpio_emul {
@@ -6,25 +7,21 @@
         gpio-controller;
         #gpio-cells = <2>;
         ngpios = <4>;
-        
+
+        /* Configure interrupt support */
         interrupt-controller;
         #interrupt-cells = <2>;
-        
+
+        /* Emulator specific properties */
         rising-edge;
         falling-edge;
         high-level;
         low-level;
     };
+};
 
-    buttons {
-        compatible = "gpio-keys";
-        button0: button_0 {
-            gpios = <&emul_gpio 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
-            label = "Emulated Button";
-        };
-    };
-
-    aliases {
-        sw0 = &button0;
-    };
+/* Override button0 to use emulated GPIO */
+&button0 {
+    gpios = <&emul_gpio 0 0x01>;  /* 0x01 = GPIO_ACTIVE_LOW, GPIO_PULL_UP */
+    label = "Emulated Button";
 };

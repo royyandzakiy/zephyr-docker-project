@@ -114,10 +114,11 @@ west twister \
 ```bash
 west build -b nucleo_g474re -s tests/drivers/gpio_button_toggle -p always -d build_nucleog4_test_gpio_toggle
 
-west flash -d build_nucleog4_test_gpio_toggle --runner nrfutil -- --dev-id 1050073602
-# or
+west flash --runner pyocd -d build_nucleog4_test_gpio_toggle/
+# or, to be specific
+west flash --runner pyocd -d build_nucleog4_test_gpio_toggle/ -- --dev-id 0046002E3234510A37333934
 
-python3 -m serial.tools.miniterm --raw /dev/ttyACM1 115200
+python3 -m serial.tools.miniterm --raw /dev/ttyACM0 115200
 ```
 
 Note: Still unsuccessful!!

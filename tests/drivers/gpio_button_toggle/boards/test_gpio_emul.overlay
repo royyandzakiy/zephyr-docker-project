@@ -1,0 +1,31 @@
+/* tests/drivers/gpio_button_toggle/boards/test_gpio_emul.overlay */
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+    emul_gpio: gpio_emul {
+        compatible = "zephyr,gpio-emul";
+        status = "okay";
+        gpio-controller;
+        #gpio-cells = <2>;
+        ngpios = <4>;
+        interrupt-controller;
+        #interrupt-cells = <2>;
+        rising-edge;
+        falling-edge;
+        high-level;
+        low-level;
+    };
+
+    emul_keys {
+        compatible = "gpio-keys";
+        emul_button_0: emul_button_0 {
+            gpios = <&emul_gpio 0 GPIO_ACTIVE_LOW>;
+            zephyr,code = <INPUT_KEY_0>;
+        };
+    };
+
+    aliases {
+        sw0 = &emul_button_0;
+    };
+};

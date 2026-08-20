@@ -1,3 +1,5 @@
+/* tests/drivers/gpio_button_toggle/boards/nrf5340dk_test_gpio_emul.overlay */
+
 / {
     /* Add emulated GPIO controller */
     emul_gpio: gpio_emul {
