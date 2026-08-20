@@ -1,0 +1,183 @@
+name: Twister_Self-Hosted
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_for_hw_test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    container:
+      image: zephyrprojectrtos/ci:v0.29.3
+
+    env:
+      ZEPHYR_VERSION: v4.2.2
+      ZEPHYR_TOOLCHAIN_VERSION: 0.17.0
+      BOARD_TYPE: "nrf5340dk/nrf5340/cpuapp"
+
+    steps:
+      - name: Cache Zephyr workspace
+        uses: actions/cache@v4
+        id: zephyr-cache
+        with:
+          path: zephyr-workspace
+          key: ${{ runner.os }}-zephyr-${{ env.ZEPHYR_VERSION }}
+
+      - name: Fetch vanilla Zephyr
+        if: steps.zephyr-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p zephyr-workspace
+          git clone --depth 1 --branch $ZEPHYR_VERSION \
+            https://github.com/zephyrproject-rtos/zephyr.git zephyr-workspace/zephyr
+          cd zephyr-workspace
+          west init -l zephyr
+          west update --narrow -o=--depth=1
+
+      - name: Cache Zephyr SDK
+        uses: actions/cache@v4
+        id: cache-zephyr-sdk
+        with:
+          path: /opt/toolchains/zephyr-sdk-${{ env.ZEPHYR_TOOLCHAIN_VERSION }}
+          key: ${{ runner.os }}-zephyr-sdk-${{ env.ZEPHYR_TOOLCHAIN_VERSION }}-arm
+
+      - name: Download & Extract Zephyr SDK
+        if: steps.cache-zephyr-sdk.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /opt/toolchains
+          wget -qO- "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_TOOLCHAIN_VERSION}/zephyr-sdk-${ZEPHYR_TOOLCHAIN_VERSION}_linux-x86_64_minimal.tar.xz" | tar -xJ -C /opt/toolchains
+
+      - name: Register SDK CMake Package
+        run: |
+          cd /opt/toolchains/zephyr-sdk-${ZEPHYR_TOOLCHAIN_VERSION}
+          ./setup.sh -c -t arm-zephyr-eabi
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ${{ runner.os }}-ccache-${{ env.BOARD_TYPE }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-${{ env.BOARD_TYPE }}-
+
+      - name: Build blinky
+        env:
+          CCACHE_DIR: ~/.cache/ccache
+        run: |
+          cd zephyr-workspace
+          west build -b $BOARD_TYPE zephyr/samples/basic/blinky -d build -p -- -DZEPHYR_SCACHE=ccache
+          ccache -s || true
+
+      - name: Create build tarball
+        run: |
+          cd zephyr-workspace
+          tar czf build.tar.gz build/zephyr/zephyr.hex
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: build.tar.gz
+          path: zephyr-workspace/build.tar.gz
+
+  hw_flash_and_test:
+    needs: build_for_hw_test
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 15
+
+    concurrency:
+      group: hw-nrf5340dk
+      cancel-in-progress: false
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: blinky-test
+
+    env:
+      CI_NRF5340DK_SNR: "1050073602" # change this to YOUR BOARD ID
+      # CI_NRF5340DK_SNR: ${{ vars.CI_NRF5340DK_SNR }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          path: blinky-test
+
+      - name: USB diagnostics
+        run: |
+          echo "=== SEGGER devices ==="
+          lsusb -d 1366: || echo "no SEGGER device"
+          echo "=== USB nodes ==="
+          ls -l /dev/bus/usb/*/*
+          echo "=== nrfutil view ==="
+          nrfutil device list || true
+
+      - name: Preflight — toolchain and probe present
+        run: |
+          set -euo pipefail
+          nrfutil --version
+          echo "--- connected probes ---"
+          nrfutil device list --json | jq -r '.. | .serialNumber? // empty' | sed 's/^0*//' | tr -d '\r' > /tmp/snrs.txt
+          cat /tmp/snrs.txt
+          if ! grep -qx "$CI_NRF5340DK_SNR" /tmp/snrs.txt; then
+            echo "::error::J-Link $CI_NRF5340DK_SNR not found. Check USB passthrough / board power."
+            exit 1
+          fi
+
+      - name: Download build tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: build.tar.gz
+          path: blinky-test/samples/blinky
+
+      - name: Untar
+        run: |
+          set -euo pipefail
+          cd samples/blinky
+          rm -rf build
+          tar xzf build.tar.gz
+          test -f build/zephyr/zephyr.hex
+
+      - name: Flash
+        run: |
+          set -euo pipefail
+          cd samples/blinky
+          nrfutil device erase     --serial-number "$CI_NRF5340DK_SNR"
+          nrfutil device program   --serial-number "$CI_NRF5340DK_SNR" --firmware build/zephyr/zephyr.hex
+          nrfutil device fw-verify --serial-number "$CI_NRF5340DK_SNR" --firmware build/zephyr/zephyr.hex
+          nrfutil device reset     --serial-number "$CI_NRF5340DK_SNR"
+
+      - name: Test
+        run: |
+          set -euo pipefail
+          
+          # Detect connected serial device (ttyACM*) matching SEGGER J-Link node
+          SERIAL_PORT=$(nrfutil device list --json | jq -r '.. | .ports? // empty | .[] | select(.vcom? == 0) | .port' | head -n1)
+          if [ -z "$SERIAL_PORT" ]; then
+            SERIAL_PORT="/dev/ttyACM1"
+          fi
+
+          cat << EOF > hardware-map.yaml
+          - connected: true
+            id: ${CI_NRF5340DK_SNR}
+            platform: nrf5340dk/nrf5340/cpuapp
+            product: J-Link
+            serial: ${SERIAL_PORT}
+          EOF
+
+          west twister --device-testing --hardware-map hardware-map.yaml -T tests/drivers/gpio_button_toggle
+
+      - name: Recover on failure
+        if: failure()
+        run: |
+          nrfutil device recover --serial-number "$CI_NRF5340DK_SNR" || true
+          for i in $(seq 30); do
+            nrfutil device list --json | jq -r '.. | .serialNumber? // empty' \
+              | grep -qx "$CI_NRF5340DK_SNR" && exit 0
+            sleep 1
+          done
+          echo "::error::probe did not re-enumerate after recover"; exit 1
+
+      - name: Leave board in a clean state
+        if: always()
+        run: nrfutil device reset --serial-number "$CI_NRF5340DK_SNR" || true
