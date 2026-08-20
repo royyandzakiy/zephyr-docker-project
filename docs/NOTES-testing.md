@@ -78,34 +78,39 @@ INFO    - Run completed
 # Testing on ESP32S3 (on-target)
 
 ```bash
-west build -b esp32s3_devkitc/esp32s3/procpu -s tests/drivers/gpio_button_toggle -p always -d build_esp32s3_test_gpio_toggle
-west build -b esp32_devkitc/esp32/procpu -s tests/drivers/gpio_button_toggle -p always -d build_esp32_test_gpio_toggle  
+# esp32s3 does NOT have a built in switch0 and led0, hence the overlay needs to be called explicitly
+west build -b esp32s3_devkitc/esp32s3/procpu \
+  -s tests/drivers/gpio_button_toggle \
+  -p always \
+  -d build_esp32s3_test_gpio_toggle \
+  -- -DDTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/esp32s3_devkitc_esp32s3_procpu.overlay"
 
-west flash --runner esp32 --esp-device /dev/ttyUSB0 -d build_esp32s3_test_gpio_toggle
+west flash --runner esp32 --esp-device /dev/ttyACM0 -d build_esp32s3_test_gpio_toggle
 
-python3 -m serial.tools.miniterm --raw /dev/ttyACM2 115200
-west espressif monitor
+python3 -m serial.tools.miniterm --raw /dev/ttyACM0 115200
 ```
-
-Note: Still unsuccessful!!
 
 ```bash
 west twister \
   -p esp32s3_devkitc/esp32s3/procpu \
   --device-testing \
   --device-serial /dev/ttyACM0 \
-  --west-flash-extra="--runner=esp32,--esp-device=/dev/ttyUSB0" \
-  -T tests/drivers/gpio_button_toggle
+  --device-serial-baud 115200 \
+  --flash-before \
+  --west-flash="--esp-device=/dev/ttyACM0" \
+  --west-runner esp32 \
+  -T tests/drivers/gpio_button_toggle \
+  --extra-args=DTC_OVERLAY_FILE=/workspaces/zephyr-docker-project/boards/esp32s3_devkitc_esp32s3_procpu.overlay
 ```
 
 ```bash
 # hardware-map.yaml
 - connected: true
-  id: '/dev/ttyUSB0'
+  id: '/dev/ttyACM0'
   platform: esp32s3_devkitc/esp32s3/procpu
   product: ESP32-S3
   runner: esp32
-  serial: /dev/ttyUSB0
+  serial: /dev/ttyACM0
   baud: 115200
 ```
 
@@ -120,8 +125,6 @@ west flash --runner pyocd -d build_nucleog4_test_gpio_toggle/ -- --dev-id 004600
 
 python3 -m serial.tools.miniterm --raw /dev/ttyACM0 115200
 ```
-
-Note: Still unsuccessful!!
 
 ```bash
 # hardware-map.yaml
@@ -142,7 +145,9 @@ west twister \
   -p nucleo_g474re \
   --device-testing \
   --device-serial /dev/ttyACM0 \
-  --west-flash-extra="--runner=pyocd" \
+  --device-serial-baud 115200 \
+  --west-flash \
+  --west-runner pyocd \
   -T tests/drivers/gpio_button_toggle
 ```
 

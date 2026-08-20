@@ -17,3 +17,7 @@
 - try run with twister
 - successfully prepare dockerfile + devcontainer + volume persistent + ncs.py script
 - successfully build main
+
+## Known Issue
+
+- currently if no device is attached via usbipd, it fails to open in container, because of the bind /usb/something/something in .devcontainer. need to find the best solution for this

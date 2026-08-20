@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 # Setup Test overlay, needs to be defined before find_package
-set(TEST_OVERLAY "${CMAKE_CURRENT_SOURCE_DIR}/boards/test_gpio_emul.overlay")
+set(TEST_OVERLAY "${CMAKE_CURRENT_SOURCE_DIR}/test_gpio_emul.overlay")
 
 # Check availability, then apply overlay
 if(EXISTS ${TEST_OVERLAY})

@@ -1,5 +1,4 @@
-# Copyright (c) 2026
-# SPDX-License-Identifier: Apache-2.0
+# tests/drivers/gpio_button_toggle/pytest/test_gpio_toggle.py
 
 import logging
 from twister_harness import Shell
