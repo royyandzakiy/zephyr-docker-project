@@ -4,10 +4,13 @@
 
 - Here is provided 4 different platform targets that are all tested and runs correctly
 - All boards that runs `tests/drivers/gpio_button_toggle` will automatically use `app.overlay` (the default overlay used by all boards, unless specified)
+- If a board dts or overlay does not yet have sw0 and btn0, it will fail to compile with showing device tree symbol errors
 
 ## On-Target Testing
 
 These tests use real boards connected to the PC
+
+[[todo: fix the inconsistent flags: west-flash-extra]]
 
 ### Testing on nRF5340dk
 
@@ -166,3 +169,4 @@ west twister \
 
 added flags:
 - `--extra-args=DTC_OVERLAY_FILE`: native_sim (obviously) does NOT have a built in switch0 and led0 in its default .dts files, hence the overlay needs to be called explicitly. another thing is, currently the native_sim overlay is stored inside the root/boards, hence does NOT get automatically captured because our target is not to root, but instead to `tests/drivers/gpio_button_toggle`. also, native_sim MUST NOT automatically use `app.overlay`, because in app.overlay, led is never defined, hence it needs to use this overlay instead
+- [[explain the need to use the added .conf]]
