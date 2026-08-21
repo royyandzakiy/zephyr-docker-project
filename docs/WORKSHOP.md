@@ -1,3 +1,5 @@
+[[recreate this based on the latest pi]]
+
 - preworkshop setup
     - use template for project
     - docker installed & running
