@@ -1,5 +1,7 @@
 # Zephyr & NCS
 
+[[explain this is how the auto envir setup and how to change]]
+
 ## Cloning latest Zephyr Vanilla
 
 ```bash
