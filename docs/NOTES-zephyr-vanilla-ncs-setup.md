@@ -2,6 +2,8 @@
 
 [[explain this is how the auto envir setup and how to change]]
 
+[[create another file, specifically talking about docker & dev container, and their various special setups (eg: bind mount dev usb)]]
+
 ## Cloning latest Zephyr Vanilla
 
 ```bash
