@@ -1,9 +1,11 @@
 ## To Do
 
-
-
-- more advanced pytest
+- create seperate standalone projects
 - add makefile to compile & run native_sim
+
+## Clean up
+
+- remove pytest.ini & conftest.py (make sure does not affect anything)
 
 ## Done
 

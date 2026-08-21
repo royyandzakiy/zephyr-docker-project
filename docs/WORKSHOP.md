@@ -1,4 +1,4 @@
-[[recreate this based on the latest pi]]
+[[recreate this based on the latest workshop PI flow]]
 
 - preworkshop setup
     - use template for project
