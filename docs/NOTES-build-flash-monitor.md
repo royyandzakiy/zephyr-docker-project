@@ -2,6 +2,8 @@
 
 [[fix, use most correct from testing, use the samples blinky]]
 
+[[add section regarding using a different board  add tech docs ref links of boards and setups for all these current boards]]
+
 ## NRF
 
 ```bash
