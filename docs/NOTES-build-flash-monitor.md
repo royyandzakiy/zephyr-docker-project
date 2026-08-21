@@ -1,4 +1,6 @@
-# Build, Flash, Monitor
+# Install Deps, Build, Flash, Monitor
+
+[[fix, use most correct from testing, use the samples blinky]]
 
 ## NRF
 
