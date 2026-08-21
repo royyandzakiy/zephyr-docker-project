@@ -1,5 +1,9 @@
 # pytest Integration Guide
 
+[[consider having a short intro by using raw pytest, without twister]]
+
+[[create excersizes to explore different pytest features. include tech docs ref links]]
+
 ## Quick Start
 
 ### Setup (one-time)
