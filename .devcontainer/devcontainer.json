@@ -10,14 +10,13 @@
   "remoteUser": "root",
   "updateRemoteUserUID": false,
   "runArgs": [
-    "--privileged",
-    "--mount", "type=bind,source=/dev/bus/usb,target=/dev/bus/usb,bind-propagation=rshared"
+    "--privileged"
   ],
   "mounts": [
     "source=zephyr-sdks-cache,target=/workdir/zephyr-sdks,type=volume",
     "source=ncs-sdks-cache,target=/workdir/ncs-sdks,type=volume",
     "source=actions-runner-state,target=/actions-runner,type=volume",
-    "source=/dev,target=/dev,type=bind"
+    "source=/dev,target=/dev,type=bind,bind-propagation=rslave"
   ],
   "customizations": {
     "vscode": {

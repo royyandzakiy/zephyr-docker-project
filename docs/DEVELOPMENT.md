@@ -24,4 +24,5 @@
 
 ## Known Issue
 
-- currently if no device is attached via usbipd, it fails to open in container, because of the bind /usb/something/something in .devcontainer. need to find the best solution for this
+- fix clangd issue
+- fix inconsistency of west twister calls
