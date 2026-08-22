@@ -1,5 +1,3 @@
-[[recreate this based on the latest workshop PI flow]]
-
 - preworkshop setup
     - use template for project
     - docker installed & running
@@ -19,14 +17,14 @@
         - current folder structure + cmake + compilation flow
         - dts: nrf5340dk, native_sim
         - hello world: west to compile & flash
-            - nrf5340dk monitor with pyserial
-            - native_sim run .exe
-        - bmi190: west to compile & flash
-            - nrf5340dk reading value, monitor with pyserial
-            - native_sim reading value, run .exe
+            - demo: nrf5340dk monitor with simple python script
+            - native_sim run .exe with simple python script
+        - bonus exercise:
+            - ...
     - session 2: ztest
         - lecture:
             - why do we test? what are unit tests?
+            - briefly on automated testing in web dev
         - creating simple test ztest
             - use west build to compile and run
             - use twister to compile and run
@@ -34,17 +32,21 @@
             - gpio emul app
             - i2c emul app
         - ztest with emul
+        - bonus exercise:
+            - ...
     - session 3: pytest
         - lecture:
             - the struggle of legacy projects, console log based testing
             - test farm, exhaustive tests
+            - snapshot of esp idf testing flow
         - create shell app
         - pytest
             - pytest hello world
             - pytest shell 
             - twister pytest hello world
             - twister pytest shell
-        - twister pytest shell bmi190
+        - bonus exercise:
+            - ...
     - sesson 4: ci & self-hosted runners
         - ci: build, run ci/self-hosted
             - ensure ci tests runs fine
@@ -53,3 +55,5 @@
                 - run: hello_native_self, pytest_shell_native_self
                 - run: hello_binary_self, pytest_shell_binary_self
                 - demo: hello_nrf53_self, pytest_shell_nrf53_self
+        - bonus exercise:
+            - ...

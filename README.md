@@ -4,7 +4,7 @@ A reusable devcontainer + project template for Zephyr RTOS and nRF Connect SDK d
 
 One container image. SDKs live in shared Docker volumes, not in your repo and not in the image. Clone this template for a new project and it attaches to the same SDKs you already downloaded — no re-download, no per-project toolchain sprawl.
 
-Ships with **vanilla Zephyr v4.2.2** and **nRF Connect SDK v3.3.0**, switchable with a single shell command.
+Ships with **vanilla Zephyr v4.2.2**.
 
 ---
 
