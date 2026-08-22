@@ -26,3 +26,9 @@
 
 - fix clangd issue
 - fix inconsistency of west twister calls
+- remove nrfjprog from dockerfile
+
+## Docs
+
+- NOTES-testing: create explanation of every --flag used
+- .devcontainer: explain every part of it, and why decided to do it that way

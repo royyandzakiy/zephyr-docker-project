@@ -10,16 +10,30 @@
 # CompilationDatabase path below (e.g. build_nrf53).
 
 CompileFlags:
-  CompilationDatabase: build
+  CompilationDatabase: twister-out/esp32s3_devkitc_esp32s3_procpu/zephyr/drivers.gpio.button_toggle
 
   Remove:
-    # Flags that are right for the compiler but noisy or unsupported in clangd.
     - -Werror
     - -pedantic
     - -fno-reorder-functions
     - -fno-defer-pop
     - --param=min-pagesize=*
     - -mfp16-format=*
+    - -fno-printf-return-value
+    - -mlongcalls
+    - -fstrict-volatile-bitfields
+    # Add these to handle Xtensa/ESP32 specific flags
+    - -mtext-section-literals
+    - -mlong-calls
+    - -fno-builtin
+    - -g*
+    - -O*
+    - -ffunction-sections
+    - -fdata-sections
+    - -march=*
+    - -mtune=*
+    - -mabi=*
+    - -mcmodel=*
 
 Diagnostics:
   # Zephyr headers pull in transitively-used symbols by design.

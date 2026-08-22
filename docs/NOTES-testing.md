@@ -36,7 +36,9 @@ west twister \
   -p nrf5340dk/nrf5340/cpuapp \
   --device-testing \
   --device-serial /dev/ttyACM1 \
-  --west-flash-extra="--runner=nrfutil,--dev-id=1050073602" \
+  --device-serial-baud 115200 \
+  --west-flash="--dev-id=1050073602" \
+  --west-runner nrfutil \
   -T tests/drivers/gpio_button_toggle
 ```
 
@@ -59,7 +61,7 @@ west build -b esp32s3_devkitc/esp32s3/procpu \
   -s tests/drivers/gpio_button_toggle \
   -p always \
   -d build_esp32s3_test_gpio_toggle \
-  -- -DDTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/esp32s3_devkitc_esp32s3_procpu.overlay"
+  -- -DEXTRA_DTC_OVERLAY_FILE="/workspaces/zephyr-docker-project/boards/esp32s3_devkitc_esp32s3_procpu.overlay"
 
 west flash --runner esp32 --esp-device /dev/ttyACM0 -d build_esp32s3_test_gpio_toggle
 
@@ -78,13 +80,16 @@ west twister \
   --west-flash="--esp-device=/dev/ttyACM0" \
   --west-runner esp32 \
   -T tests/drivers/gpio_button_toggle \
-  --extra-args=DTC_OVERLAY_FILE=/workspaces/zephyr-docker-project/boards/esp32s3_devkitc_esp32s3_procpu.overlay
+  --extra-args=DTC_OVERLAY_FILE=/workspaces/zephyr-docker-project/boards/esp32s3_devkitc_esp32s3_procpu.overlay \
+  --extra-args=EXTRA_DTC_OVERLAY_FILE=/workspaces/zephyr-docker-project/tests/drivers/gpio_button_toggle/app.overlay
 ```
 
 added flags:
 - `--flash-before`: by default is, the harness opens the serial port first, then flashes, causing it to be stale and fail to read. flashes first and opens the serial connection afterwards, and it propagates into the generated pytest command
-- `--extra-args=DTC_OVERLAY_FILE`: esp32s3 does NOT have a built in switch0 and led0 in its default .dts files, hence the overlay needs to be called explicitly. another thing is, currently the esp32s3 is stored inside the root/boards, hence does NOT get automatically captured because our target is not to root, but instead to `tests/drivers/gpio_button_toggle`
 - `--west-runner esp32`: required to be able to flash. the esp32 is universal for espressif chips, not just the esp32 type board.
+- `--extra-args=DTC_OVERLAY_FILE`: esp32s3 does NOT have a built in switch0 and led0 in its default .dts files, hence the overlay needs to be called explicitly. another thing is, currently the esp32s3 is stored inside the root/boards, hence does NOT get automatically captured because our target is not to root, but instead to `tests/drivers/gpio_button_toggle`
+- `--west-flash`: this is a different extra arg than the `--extra-args` flag, because this is used during flashing, while `--extra-args` is used by cmake during compile time. here we add where to find and flash the esp device. this is consumed by `esptool`
+- `--device-serial`: this is different from `--west-flash`, as this one is actually used by twister harness to collect outputs and decide pass/fail
 
 ```bash
 # hardware-map.yaml
